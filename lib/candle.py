@@ -43,9 +43,10 @@ class FormCandle:
         self.candle = None
 
     def __is_reset(self, tick: Tick):
-        #if self.current_hour == 0:
-            # first tick
-        #    return False
+        if self.current_hour == 0:
+            self.current_hour = tick.last_trade_time.hour
+            self.current_minute = tick.last_trade_time.minute
+            return False
 
         if tick.last_trade_time.hour != self.current_hour or tick.last_trade_time.minute != self.current_minute:
             return True
