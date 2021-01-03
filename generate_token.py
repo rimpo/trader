@@ -6,6 +6,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('generate_token')
 
 
+# use https://kite.zerodha.com/connect/login?v=3&api_key=xxx
+
 if __name__ == "__main__":
     if len(API_KEY) < 5:
         logger.error("Invalid API_KEY")

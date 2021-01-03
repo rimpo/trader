@@ -1,6 +1,6 @@
 import json
 import logging
-from config import API_KEY, ACCESS_TOKEN, INSTRUMENT_FILE, EXCHANGE
+from .load_env import API_KEY, ACCESS_TOKEN, INSTRUMENT_FILE, EXCHANGE
 
 from kiteconnect import KiteConnect
 

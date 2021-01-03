@@ -9,3 +9,5 @@ ACCESS_TOKEN = os.environ["ACCESS_TOKEN"]
 EXCHANGE = os.environ["EXCHANGE"]
 
 INSTRUMENT_FILE = "./data/instruments.json"
+
+TRADER_RIMPO_BOT_ACCESS_TOKEN = os.environ["BOT_ACCESS_TOKEN"]

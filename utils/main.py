@@ -46,10 +46,10 @@ if __name__ == "__main__":
     def on_connect(ws, response):
         # Callback on successful connect.
         # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
-        # ws.subscribe(subscribed_tokens)
+        ws.subscribe(subscribed_tokens)
 
         # Set RELIANCE to tick in `full` mode.
-        # ws.set_mode(ws.MODE_FULL, subscribed_tokens)
+        ws.set_mode(ws.MODE_FULL, subscribed_tokens)
         logger.info(f"token: {subscribed_tokens} subscribed")
 
     def on_close(ws, code, reason):
