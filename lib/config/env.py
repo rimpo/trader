@@ -1,5 +1,12 @@
 import os
 
+
+PRODUCTION = "production"
+DEVELOPMENT = "development"
+TESTING = "testing"
+
+TRADER_RIMPO_ENV = os.environ["TRADER_RIMPO_ENV"]
+
 API_KEY = os.environ["API_KEY"]
 API_SECRET = os.environ["API_SECRET"]
 

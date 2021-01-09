@@ -1,0 +1,15 @@
+kiteconnect
+python-telegram-bot
+sqlalchemy
+TA-Lib
+numpy
+flask
+flask-injector
+injector
+python-json-logger
+
+# dev requirements
+notebook
+pylint
+bandit
+flake8
