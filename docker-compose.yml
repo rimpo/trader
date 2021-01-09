@@ -4,16 +4,15 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        - KITE_API_KEY=$KITE_API_KEY
-        - KITE_API_SECRET=$KITE_API_SECRET
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - BACKEND_MODE=serve-http
+      - KITE_API_KEY
+      - KITE_API_SECRET
+      - TRADER_RIMPO_BOT_ACCESS_TOKEN
     volumes:
       - ./backend:/app/backend
     command: [
-      "run-program",
       "/usr/local/bin/gunicorn",
       "--bind=0.0.0.0:5000",
       "--access-logfile=-",
@@ -26,6 +25,6 @@ services:
       "app:app"
     ]
     ports:
-      - "7777:5000"
+      - "5000:5000"
 volumes:
   trader-db-data:
