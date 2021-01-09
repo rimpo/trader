@@ -20,8 +20,8 @@ class Container(Module):
     @noscope
     def provide_config(self) -> config.Config:
         return config.Config(
-            api_key=env.API_KEY,
-            api_secret=env.API_SECRET
+            api_key=env.KITE_API_KEY,
+            api_secret=env.KITE_API_SECRET
         )
     """
     def provide_auth_user(self) -> lib.auth.user.User:

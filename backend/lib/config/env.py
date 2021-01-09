@@ -7,11 +7,11 @@ TESTING = "testing"
 
 TRADER_RIMPO_ENV = os.environ["TRADER_RIMPO_ENV"]
 
-API_KEY = os.environ["API_KEY"]
-API_SECRET = os.environ["API_SECRET"]
+KITE_API_KEY = os.environ["KITE_API_KEY"]
+KITE_API_SECRET = os.environ["KITE_API_SECRET"]
 
-REQUEST_TOKEN = os.environ["REQUEST_TOKEN"]
-ACCESS_TOKEN = os.environ["ACCESS_TOKEN"]
+KITE_REQUEST_TOKEN = os.environ["KITE_REQUEST_TOKEN"]
+KITE_ACCESS_TOKEN = os.environ["KITE_ACCESS_TOKEN"]
 
 EXCHANGE = os.environ["EXCHANGE"]
 

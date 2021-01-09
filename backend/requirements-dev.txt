@@ -1,0 +1,4 @@
+notebook
+pylint
+bandit
+flake8

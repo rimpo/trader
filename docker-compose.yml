@@ -1,0 +1,31 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - KITE_API_KEY=$KITE_API_KEY
+        - KITE_API_SECRET=$KITE_API_SECRET
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - BACKEND_MODE=serve-http
+    volumes:
+      - ./backend:/app/backend
+    command: [
+      "run-program",
+      "/usr/local/bin/gunicorn",
+      "--bind=0.0.0.0:5000",
+      "--access-logfile=-",
+      "--access-logformat='%(h)s %(l)s %(u)s %(t)s \"%(r)s\" %(s)s %(b)s \"%(f)s\" \"%(a)s\" %(L)s'",
+      "--workers=1",
+      "--timeout=600",
+      "--limit-request-field_size=65520",
+      "--limit-request-line=8188",
+      "--reload",
+      "app:app"
+    ]
+    ports:
+      - "7777:5000"
+volumes:
+  trader-db-data:
