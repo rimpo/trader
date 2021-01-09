@@ -36,7 +36,7 @@ for instrument in instruments:
 
 bot = telegram.Bot(token=TRADER_RIMPO_BOT_ACCESS_TOKEN)
 
-subscribed_symbols = ["BHARTIARTL", "ZEEL", ]
+subscribed_symbols = ["BPCL", "DBCORP"]
 
 subscribed_tokens = []
 for symbol in subscribed_symbols:

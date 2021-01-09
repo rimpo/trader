@@ -50,7 +50,6 @@ class FormCandle:
 
         if tick.last_trade_time.hour != self.current_hour or tick.last_trade_time.minute != self.current_minute:
             return True
-
         return False
 
     def process(self, tick: Tick):
@@ -60,11 +59,13 @@ class FormCandle:
             self.candle = Candle(tick.last_price, tick.last_quantity)
 
         self.candle.process(tick)
-
-        # return candle when the time period condition is met 
+        # return candle when the time period condition is met
         if self.__is_reset(tick):
             duplicate_candle = copy.deepcopy(self.candle)
             self.candle.reset(tick.last_price)
+
+            self.current_hour = tick.last_trade_time.hour
+            self.current_minute = tick.last_trade_time.minute
             return duplicate_candle
         return None
 
