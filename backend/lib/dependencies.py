@@ -2,6 +2,7 @@ import logging
 import flask
 from injector import Injector, Binder, Module, provider, noscope, singleton as singleton_scope
 # from injector import Binder, Module, multiprovider, noscope, provider
+from kiteconnect import KiteConnect
 
 from lib.config import env, config
 from lib import log
@@ -10,9 +11,15 @@ def configure(binder: Binder):
     pass
 
 class Container(Module):
+
     @provider
     @singleton_scope
-    def provide__logger(self) -> log.Logger:
+    def provide_kite_connect(self) -> KiteConnect:
+        return KiteConnect(api_key=env.KITE_API_KEY)
+
+    @provider
+    @singleton_scope
+    def provide_logger(self) -> log.Logger:
         """Provides a logger scoped to the thread"""
         return log.Logger(logging.getLogger(), {})
 

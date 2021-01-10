@@ -7,5 +7,5 @@ injector
 python-json-logger
 gunicorn
 TA-Lib
-
-
+rethinkdb
+remodel

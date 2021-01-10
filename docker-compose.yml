@@ -10,6 +10,14 @@ services:
       - KITE_API_KEY
       - KITE_API_SECRET
       - TRADER_RIMPO_BOT_ACCESS_TOKEN
+      - DB_HOST
+      - DB_PORT
+      - DB_NAME
+      - DB_USER
+      - DB_PASSWORD
+      - DB_ADMIN_PASSWORD
+      - TRADER_RIMPO_ENV
+      - LOG_LEVEL
     volumes:
       - ./backend:/app/backend
     command: [
@@ -30,8 +38,9 @@ services:
     image: rethinkdb:2.4.1
     ports:
      - "28015"
+     - "5001:5001"
     volumes:
-     - /trader-db-data:/data
-    command: rethinkdb --bind all --data /data
+     - trader-db-data:/data
+    command: rethinkdb --bind all -d /data --http-port 5001
 volumes:
   trader-db-data:
