@@ -6,6 +6,10 @@ from kiteconnect import KiteConnect
 
 from lib.config import env, config
 from lib import log
+from rethinkdb import r
+from remodel.connection import get_conn
+
+from services import external
 
 def configure(binder: Binder):
     pass
@@ -15,7 +19,17 @@ class Container(Module):
     @provider
     @singleton_scope
     def provide_kite_connect(self) -> KiteConnect:
-        return KiteConnect(api_key=env.KITE_API_KEY)
+        kite = KiteConnect(api_key=env.KITE_API_KEY)
+        with get_conn() as conn:
+            data = r.db(env.DB_NAME).table('auth').get('1').run(conn)
+            if data is not None:
+                kite.set_access_token(data['access_token'])
+        return kite
+
+    @provider
+    @noscope
+    def provide_access_token_service(self, logger: log.Logger, kite: KiteConnect) -> external.kite.AccessTokenService:
+        return external.kite.AccessTokenService(logger, kite)
 
     @provider
     @singleton_scope
@@ -30,6 +44,11 @@ class Container(Module):
             api_key=env.KITE_API_KEY,
             api_secret=env.KITE_API_SECRET
         )
+
+    @provider
+    @noscope
+    def provide_instrument_service(self, logger: log.Logger, kite: KiteConnect) -> external.kite.InstrumentService:
+        return external.kite.InstrumentService(logger, kite)
     """
     def provide_auth_user(self) -> lib.auth.user.User:
         if not hasattr(flask.g, 'current_user') or flask.g.current_user is None:

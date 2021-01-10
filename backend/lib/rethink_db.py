@@ -1,10 +1,7 @@
-from remodel.connection import ConnectionPool
+from lib.config import env
+from rethinkdb import r
 
-from dataclasses import dataclass
-from typing import List
+rdb = r.db(env.DB_NAME)
 
 
-@dataclass(frozen=True)
-class RethinkDB:
-    pool: ConnectionPool
 

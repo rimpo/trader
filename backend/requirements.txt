@@ -9,3 +9,5 @@ gunicorn
 TA-Lib
 rethinkdb
 remodel
+dramatiq[rabbitmq, watch]
+

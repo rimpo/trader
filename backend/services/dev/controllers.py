@@ -3,12 +3,17 @@ from lib import dependencies
 from lib.config import env
 from lib import log
 from rethinkdb import r
+from lib.rethink_db import r as rdb
 
 blueprint = Blueprint('dev', __name__)
 
 
 def __create_tables(logger: log.Logger, conn):
-    r.db(env.DB_NAME).table_create('instruments').run(conn)
+    # auth will store request token & access token
+    r.db(env.DB_NAME).table_create('auth', primary_key='id').run(conn)
+
+    # all the instrument downloaded from NSE
+    r.db(env.DB_NAME).table_create('instrument', primary_key='instrument_token').run(conn)
 
 @blueprint.cli.command("recreate-db")
 def recreate_db():
@@ -33,6 +38,8 @@ def recreate_db():
     # grant permission
     r.db(env.DB_NAME).grant(env.DB_USER, {"read": True, "write": True, "config": True}).run(conn)
     logger.warning(f'{env.DB_USER} permission granted:.')
+
+    # create tables
     __create_tables(logger, conn)
 
 
