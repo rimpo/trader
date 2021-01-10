@@ -26,5 +26,12 @@ services:
     ]
     ports:
       - "5000:5000"
+  rethink-db:
+    image: rethinkdb:2.4.1
+    ports:
+     - "28015"
+    volumes:
+     - /trader-db-data:/data
+    command: rethinkdb --bind all --data /data
 volumes:
   trader-db-data:
