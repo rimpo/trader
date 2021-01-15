@@ -39,8 +39,7 @@ def run_app():
 
     def update_candle(tick):
         candle = candles[tick['instrument_token']]
-        if candle["date"].hour != tick["last_trade_time"].hour or \
-                candle["date"].minute != tick["last_trade_time"].minute:
+        if candle["date"].minute != tick["last_trade_time"].minute and tick["last_trade_time"].minute % 5 == 0:
             # r.db(env.DB_NAME).table('tick_1m').insert('')
             logger.info(candle)
             # send candle
@@ -56,8 +55,8 @@ def run_app():
 
     def process_ticks(ticks):
         for tick in ticks:
-            tick['last_trade_time'] = india.localize(tick['last_trade_time'])
-            tick['timestamp'] = india.localize(tick['timestamp'])
+            tick['last_trade_time'] = tick['last_trade_time'].astimezone(india)
+            tick['timestamp'] = tick['timestamp'].astimezone(india)
             if tick['instrument_token'] in candles:
                 update_candle(tick)
             else:
@@ -69,9 +68,9 @@ def run_app():
     def on_connect(ws, response):
         # Callback on successful connect.
         # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
-        ws.subscribe([738561, 5633])
+        ws.subscribe([975873,])
         # Set RELIANCE to tick in `full` mode.
-        ws.set_mode(ws.MODE_FULL, [738561, 5633])
+        ws.set_mode(ws.MODE_FULL, [975873,])
 
     def on_close(ws, code, reason):
         # On connection close stop the main loop

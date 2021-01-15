@@ -10,14 +10,6 @@ from services.dev.controllers import blueprint as dev_blueprint
 
 def create_app() -> Flask:
     app = Flask('Trader Rimpo Backend')
-    app.config['MONGODB_SETTINGS'] = {
-        'db': env.DB_NAME,
-        'host': env.DB_HOST,
-        'port': int(env.DB_PORT)
-    }
-    print(f"{env.DB_NAME} {env.DB_HOST} {env.DB_PORT}")
-
-    db.init_app(app)
     app.register_blueprint(api_blueprint, url_prefix="/backend/api")
     app.register_blueprint(dev_blueprint)
     FlaskInjector(app=app, injector=dependencies.create_injector())

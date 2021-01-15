@@ -8,7 +8,7 @@ from services.auth import auth
 from pytz import timezone
 from datetime import datetime, timedelta
 from pytimeparse import parse
-from models.ohlc import Ohlc5min
+from lib.mongo_db import db
 
 blueprint = Blueprint('dev', __name__)
 
@@ -29,44 +29,66 @@ def recreate_db():
 def order(s: str, bs: str, q: int):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
+    kite = injector.get(KiteConnect)
+    _ = injector.get(auth.AuthService)
 
-    with get_conn() as conn:
-        data = r.db(env.DB_NAME).table('auth').get(1).run(conn)
+    t = None
+    if bs == "B":
+        t = kite.TRANSACTION_TYPE_BUY
+    else:
+        t = kite.TRANSACTION_TYPE_SELL
 
-        if data is None:
-            return
-
-        kite = KiteConnect(env.KITE_API_KEY)
-        kite.set_access_token(data['access_token'])
-
-        t = None
-        if bs == "B":
-            t = kite.TRANSACTION_TYPE_BUY
-        else:
-            t = kite.TRANSACTION_TYPE_SELL
-
-        kite.place_order(kite.VARIETY_REGULAR, kite.EXCHANGE_NSE, s, transaction_type=t,
-                         quantity=q, product=kite.PRODUCT_MIS,order_type=kite.ORDER_TYPE_MARKET)
+    kite.place_order(kite.VARIETY_REGULAR, kite.EXCHANGE_NSE, s, transaction_type=t,
+                     quantity=q, product=kite.PRODUCT_MIS,order_type=kite.ORDER_TYPE_MARKET)
 
 @blueprint.cli.command("position")
 def position():
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
+    kite = injector.get(KiteConnect)
+    _ = injector.get(auth.AuthService)
 
-    with get_conn() as conn:
-        data = r.db(env.DB_NAME).table('auth').get(1).run(conn)
+    p = kite.positions()
+    logger.info(p)
+    logger.info(kite.orders())
 
-        if data is None:
-            return
 
-        kite = KiteConnect(env.KITE_API_KEY)
-        kite.set_access_token(data['access_token'])
+@blueprint.cli.command("sync-candles")
+@click.option('--token', required=True, type=str)
+@click.option('--period', default="15minute")
+@click.option('--sleep-seconds', default=15)
+def sync_candle(token, period: str, sleep_seconds: int):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    kite = injector.get(KiteConnect)
+    _ = injector.get(auth.AuthService)
+    india = timezone('Asia/Kolkata')
+    now_utc = datetime.utcnow()
 
-        p = kite.positions()
+    from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 14, 0))
+    to_date = from_date + timedelta(minutes=15)
 
-        logger.info(p)
+    fmt = '%Y-%m-%d %H:%M:%S'
 
-        logger.info(kite.orders())
+    expected_dt = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
+
+    while True:
+        logger.info(f"{token} from:{from_date} to:{to_date}, period:{period} waiting")
+        results = kite.historical_data(
+            int(token),
+            from_date.strftime(fmt),
+            to_date.strftime(fmt),
+            interval=period,
+            continuous=False, oi=True
+        )
+        if results > 0:
+            from_date += timedelta(minutes=15)
+            to_date += timedelta(minutes=15)
+
+
+
+        logger.info(f"result:{results}")
+
 
 @blueprint.cli.command("download-candles")
 @click.option('--token', required=True, type=str)
@@ -77,9 +99,9 @@ def download_candles(token: str, period: str, since: str):
     logger = injector.get(log.Logger)
     kite = injector.get(KiteConnect)
     _ = injector.get(auth.AuthService)
-
     india = timezone('Asia/Kolkata')
-    to_date = india.localize(datetime.utcnow())
+    now_utc = datetime.utcnow()
+    to_date = now_utc.astimezone(india)
     from_date = to_date - timedelta(seconds=parse(since))
 
     logger.info(f"{token} from:{from_date} to:{to_date}, period:{period}")
@@ -92,18 +114,27 @@ def download_candles(token: str, period: str, since: str):
         int(token),
         from_date.strftime(fmt),
         to_date.strftime(fmt),
-        interval="5minute",
+        interval=period,
         continuous=False, oi=True
     )
-    for result in results:
-        Ohlc5min(
-            token=token,
-            date=result['date'],
-            open_price=result['open'],
-            close_price=result['close'],
-            high_price=result['high'],
-            low_price=result['low'],
-            volume=result['volume'],
-        ).save()
-    logger.info("save done.")
+    if len(results) > 0:
+        db[f"ohlc_{token}_{period}"].insert_many(results)
 
+
+@blueprint.cli.command("macd-strategy")
+@click.option('--token', required=True, type=str)
+def macd_strategy(token: str):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    kite = injector.get(KiteConnect)
+    _ = injector.get(auth.AuthService)
+
+    india = timezone('Asia/Kolkata')
+    now_utc = datetime.utcnow()
+    try:
+        with db[f"ohlc_{token}_15minute"].watch(
+                [{'$match': {'operationType': 'insert'}}]) as stream:
+            for insert_change in stream:
+                print(insert_change)
+    except Exception as e:
+        logger.exception(e)

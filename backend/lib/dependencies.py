@@ -8,10 +8,13 @@ from lib.config import env, config
 from lib import log
 
 from services import external
-from services.auth import auth
+from services import auth, candles
+
 
 def configure(binder: Binder):
-    pass
+    binder.bind(auth.AuthRepository, auth.Repository)
+    binder.bind(candles.CandleRepository, candles.Repository)
+
 
 class Container(Module):
 
@@ -27,11 +30,12 @@ class Container(Module):
 
     @provider
     @singleton_scope
-    def provide_auth_service(self, logger: log.Logger, kite: KiteConnect) -> auth.AuthService:
+    def provide_auth_service(self, logger: log.Logger, kite: KiteConnect, auth_repo: auth.AuthRepository) -> auth.AuthService:
         return auth.AuthService(
             logger,
             kite,
-            env.KITE_API_SECRET
+            env.KITE_API_SECRET,
+            auth_repo
         )
 
     @provider
