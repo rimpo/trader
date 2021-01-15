@@ -9,7 +9,7 @@ services:
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - BACKEND_MODE=serve-http
-    depends_on: [rethink-db]
+    depends_on: [mongo-db]
     volumes:
       - ./backend:/app/backend
     command: [
@@ -30,7 +30,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    depends_on: [rethink-db]
+    depends_on: [mongo-db]
     env_file:
       .env
     environment:
@@ -42,27 +42,18 @@ services:
       "python",
       "app_ticker.py"
     ]
-#  dramatiq-backend:
-#    build:
-#      context: ./backend
-#      dockerfile: Dockerfile
-#    depends_on: [rethink-db]
-#    env_file:
-#      .env
-#    environment:
-#      - PYTHONDONTWRITEBYTECODE=1
-#      - BACKEND_MODE=serve-http
-#    volumes:
-#      - ./backend:/app/backend
-#    command: ["dramatiq", "app_dramatiq"]
-  rethink-db:
-    image: rethinkdb:2.4.1
+
+  mongo-db:
+    image: mongo
+    environment:
+      - MONGO_INITDB_DATABASE
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
     ports:
-     - "28015:28015"
-     - "5001:5001"
+      - "27017-27019:27017-27019"
     volumes:
-     - trader-db-data:/data
-    command: rethinkdb --bind all -d /data --http-port 5001
+      - trader-mongo-data:/data/db
+    command: --quiet
 
 volumes:
-  trader-db-data:
+  trader-mongo-data:

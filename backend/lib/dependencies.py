@@ -6,10 +6,9 @@ from kiteconnect import KiteConnect
 
 from lib.config import env, config
 from lib import log
-from rethinkdb import r
-from remodel.connection import get_conn
 
 from services import external
+from services.auth import auth
 
 def configure(binder: Binder):
     pass
@@ -18,18 +17,22 @@ class Container(Module):
 
     @provider
     @singleton_scope
-    def provide_kite_connect(self) -> KiteConnect:
-        kite = KiteConnect(api_key=env.KITE_API_KEY)
-        with get_conn() as conn:
-            data = r.db(env.DB_NAME).table('auth').get('1').run(conn)
-            if data is not None:
-                kite.set_access_token(data['access_token'])
-        return kite
+    def provide_kite(self, logger: log.Logger) -> KiteConnect:
+        return KiteConnect(env.KITE_API_KEY)
 
     @provider
     @noscope
     def provide_access_token_service(self, logger: log.Logger, kite: KiteConnect) -> external.kite.AccessTokenService:
         return external.kite.AccessTokenService(logger, kite)
+
+    @provider
+    @singleton_scope
+    def provide_auth_service(self, logger: log.Logger, kite: KiteConnect) -> auth.AuthService:
+        return auth.AuthService(
+            logger,
+            kite,
+            env.KITE_API_SECRET
+        )
 
     @provider
     @singleton_scope

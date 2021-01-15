@@ -6,6 +6,6 @@ class InstrumentService:
         self.__logger = logger
         self.__kite = kite
 
-    def get_instruments(self) -> dict:
-        return self.__kite.instruments()
+    def get_instruments(self, exchange) -> dict:
+        return self.__kite.instruments(exchange="NSE")
 

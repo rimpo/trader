@@ -1,66 +1,100 @@
 from typing import List
 from kiteconnect import KiteTicker
 from lib.config import env
-# from remodel.connection import pool
-# from remodel.connection import get_conn
-# from lib.app_dramatiq import process_ticks
+from lib.mongo_db import db
+from mongoengine import connect
 from lib import dependencies
 from lib import log
 import time
+from pytz import timezone
+from services.auth import auth
+from collections import defaultdict
 
-from rethinkdb import RethinkDB # import the RethinkDB package
-
+india = timezone('Asia/Kolkata')
 
 
 def run_app():
+    connect(env.DB_NAME, host=env.DB_HOST, port=int(env.DB_PORT))
+
     log.initialize_root_logger()
 
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
+    auth_service = injector.get(auth.AuthService)
 
     logger.info("starting ticker service")
 
-    r = RethinkDB()  # create a RethinkDB object
-    conn = r.connect(host=env.DB_HOST, port=env.DB_PORT, auth_key=None, user=env.DB_USER, password=env.DB_PASSWORD, db=env.DB_NAME)
+    candles = defaultdict(dict)
 
-    r.db(env.DB_NAME).table('auth').wait().run(conn)
-    data = r.db(env.DB_NAME).table('auth').get(1).run(conn)
+    def create_candle(tick):
+        candles[tick['instrument_token']] = {
+            "instrument_token": tick['instrument_token'],
+            "open": tick["last_price"],
+            "close": tick["last_price"],
+            "high": tick["last_price"],
+            "low": tick["last_price"],
+            "volume": tick["last_quantity"],
+            "date": tick["last_trade_time"],
+        }
 
-    if data is not None:
+    def update_candle(tick):
+        candle = candles[tick['instrument_token']]
+        if candle["date"].hour != tick["last_trade_time"].hour or \
+                candle["date"].minute != tick["last_trade_time"].minute:
+            # r.db(env.DB_NAME).table('tick_1m').insert('')
+            logger.info(candle)
+            # send candle
+            create_candle(tick)
+            # reset candle
+        if candle["high"] < tick["last_price"]:
+            candle["high"] = tick["last_price"]
+        if candle["low"] > tick["last_price"]:
+            candle["low"] = tick["last_price"]
+        candle["close"] = tick["last_price"]
+        candle["date"] = tick["last_trade_time"].replace(second=0, microsecond=0)
+        candle["volume"] = tick["last_quantity"] + candle["volume"]
+
+    def process_ticks(ticks):
+        for tick in ticks:
+            tick['last_trade_time'] = india.localize(tick['last_trade_time'])
+            tick['timestamp'] = india.localize(tick['timestamp'])
+            if tick['instrument_token'] in candles:
+                update_candle(tick)
+            else:
+                create_candle(tick)
+
+    def on_ticks(ws, ticks):
+        pass
+
+    def on_connect(ws, response):
+        # Callback on successful connect.
+        # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
+        ws.subscribe([738561, 5633])
+        # Set RELIANCE to tick in `full` mode.
+        ws.set_mode(ws.MODE_FULL, [738561, 5633])
+
+    def on_close(ws, code, reason):
+        # On connection close stop the main loop
+        # Reconnection will not happen after executing `ws.stop()`
+        ws.stop()
+
+    logger.info(f"token:{auth_service.get_access_token()}")
+
+    kws = KiteTicker(api_key=env.KITE_API_KEY, access_token=auth_service.get_access_token())
+
+
+    # Assign the callbacks.
+    kws.on_ticks = on_ticks
+    kws.on_connect = on_connect
+    kws.on_close = on_close
+
+    # Infinite loop on the main thread. Nothing after this will run.
+    # You have to use the pre-defined callbacks to manage subscriptions.
+    kws.connect(threaded=True)
+
+    logger.info("start processing!!")
+    while True:
         def on_ticks(ws, ticks):
-            pass
-
-        def on_connect(ws, response):
-            # Callback on successful connect.
-            # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
-            ws.subscribe([738561, 5633])
-            # Set RELIANCE to tick in `full` mode.
-            ws.set_mode(ws.MODE_FULL, [738561])
-
-        def on_close(ws, code, reason):
-            # On connection close stop the main loop
-            # Reconnection will not happen after executing `ws.stop()`
-            ws.stop()
-
-        kws = KiteTicker(api_key=env.KITE_API_KEY, access_token=data['access_token'])
-
-
-        # Assign the callbacks.
+            process_ticks(ticks)
         kws.on_ticks = on_ticks
-        kws.on_connect = on_connect
-        kws.on_close = on_close
-
-        # Infinite loop on the main thread. Nothing after this will run.
-        # You have to use the pre-defined callbacks to manage subscriptions.
-        kws.connect(threaded=True)
-
-        logger.info("start processing!!")
-        while True:
-            def on_ticks(ws, ticks):
-                for tick in ticks:
-                    #t = Tick(tick)
-                    #token_details[tick['instrument_token']].process(t)
-                    logger.info(tick)
-                    pass
-            kws.on_ticks = on_ticks
-            time.sleep(0.1)
+        time.sleep(0.1)

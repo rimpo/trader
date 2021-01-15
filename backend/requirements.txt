@@ -10,4 +10,8 @@ TA-Lib
 rethinkdb
 remodel
 dramatiq[rabbitmq, watch]
-
+click
+pymongo
+mongoengine
+flask-mongoengine
+pytimeparse
