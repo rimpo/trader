@@ -8,7 +8,7 @@ from lib.config import env, config
 from lib import log
 
 from services import external
-from services import auth, candles, instruments
+from services import auth, candles, instruments, historical_data
 
 
 def configure(binder: Binder):
@@ -19,6 +19,9 @@ def configure(binder: Binder):
 
     binder.bind(instruments.InstrumentService, instruments.InstrumentService)
     binder.bind(instruments.InstrumentRepository, instruments.Repository)
+
+    binder.bind(historical_data.HistoricalDataService, historical_data.HistoricalDataService)
+    binder.bind(historical_data.HistoricalDataRepository, historical_data.Repository)
 
 
 class Container(Module):

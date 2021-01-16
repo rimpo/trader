@@ -18,14 +18,6 @@ class HistoricalDataService:
     60minute : 400 days
     day : 2000 days
     """
-    PERIOD_1m = "minute"
-    PERIOD_3m = "3minute"
-    PERIOD_5m = "5minute"
-    PERIOD_10m = "10minute"
-    PERIOD_15m = "15minute"
-    PERIOD_30m = "30minute"
-    PERIOD_60m = "60minute"
-    PERIOD_1d = "day"
 
     @inject
     def __init__(self, logger: log.Logger, auth: AuthService):
