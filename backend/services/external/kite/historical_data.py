@@ -24,7 +24,7 @@ class HistoricalDataService:
         self.__logger = logger
         self.__kite = auth.get_kite()
 
-    def get_historical_data(self, token: int, from_date: datetime, to_date: datetime, period: str, ) -> List[dict]:
+    def get_historical_data(self, token: int, period: str, from_date: datetime, to_date: datetime) -> List[dict]:
         if from_date > to_date:
             raise Exception(f"from_date > to_date")
         fmt = '%Y-%m-%d %H:%M:%S'

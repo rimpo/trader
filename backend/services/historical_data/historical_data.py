@@ -26,8 +26,8 @@ class HistoricalDataService:
         self.__external_historical_data_service = external_historical_data_service
         self.__repository = repository
 
-    def download_and_save(self, token: int, from_date: datetime, to_date: datetime, period: str):
-        data = self.__external_historical_data_service.get_historical_data(token, from_date, to_date, period)
+    def download_and_save(self, token: int, period: str, from_date: datetime, to_date: datetime):
+        data = self.__external_historical_data_service.get_historical_data(token, period, from_date, to_date)
         self.__repository.insert(token, period, data)
 
     def get_for_date(self, token: int, period: str, for_date) -> dict:
