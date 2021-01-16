@@ -8,10 +8,12 @@ class Repository:
         pass
 
     def insert_instruments(self, instruments: dict):
+        for instrument in instruments:
+            instruments["_id"] = instrument['instrument_token']
         db["instruments"].insert_many(instruments)
 
     def get_symbol(self, token: int) -> str:
-        data = db["instruments"].find_one({"instrument_token": token})
+        data = db["instruments"].find_one({"_id": token})
         if list(data) > 0:
             return data['tradingsymbol']
         raise Exception(f"Token not found in instruments. {token}")
