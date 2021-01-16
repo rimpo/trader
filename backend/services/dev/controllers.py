@@ -9,6 +9,7 @@ from pytz import timezone
 from datetime import datetime, timedelta
 from pytimeparse import parse
 from lib.mongo_db import db
+from services.external.kite.order import OrderService
 
 blueprint = Blueprint('dev', __name__)
 
@@ -29,17 +30,13 @@ def recreate_db():
 def order(s: str, bs: str, q: int):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
-    kite = injector.get(KiteConnect)
-    _ = injector.get(auth.AuthService)
+    order_service = injector.get(OrderService)
 
-    t = None
     if bs == "B":
-        t = kite.TRANSACTION_TYPE_BUY
+        order_service.buy_market_order_cnc(s, q)
     else:
-        t = kite.TRANSACTION_TYPE_SELL
+        order_service.sell_market_order_cnc(s, q)
 
-    kite.place_order(kite.VARIETY_REGULAR, kite.EXCHANGE_NSE, s, transaction_type=t,
-                     quantity=q, product=kite.PRODUCT_MIS,order_type=kite.ORDER_TYPE_MARKET)
 
 @blueprint.cli.command("position")
 def position():

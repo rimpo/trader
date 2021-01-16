@@ -8,13 +8,17 @@ from lib.config import env, config
 from lib import log
 
 from services import external
-from services import auth, candles
+from services import auth, candles, instruments
 
 
 def configure(binder: Binder):
     binder.bind(auth.AuthRepository, auth.Repository)
+
     binder.bind(candles.CandleRepository, candles.Repository)
     binder.bind(candles.CandleService, candles.CandleService)
+
+    binder.bind(instruments.InstrumentService, instruments.InstrumentService)
+    binder.bind(instruments.InstrumentRepository, instruments.Repository)
 
 
 class Container(Module):

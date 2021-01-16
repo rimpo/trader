@@ -1,6 +1,7 @@
 from kiteconnect import KiteConnect
 from lib import log
 from typing import Protocol
+from injector import inject
 
 
 class AuthRepository(Protocol):
@@ -12,6 +13,7 @@ class AuthRepository(Protocol):
 
 
 class AuthService:
+    @inject
     def __init__(self, logger: log.Logger, kite: KiteConnect, api_secret: str, auth_repo: AuthRepository):
         self.__api_secret = api_secret
         self.__kite = kite
@@ -31,3 +33,6 @@ class AuthService:
 
     def get_access_token(self):
         return self.__access_token
+
+    def get_kite(self):
+        return self.__kite

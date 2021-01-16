@@ -1,8 +1,11 @@
+from injector import inject
 from kiteconnect import KiteConnect
 from lib import log
 
 class AccessTokenService:
     """ Kite authentication service"""
+
+    @inject
     def __init__(self, logger: log.Logger, kite: KiteConnect):
         self.__kite = kite
         self.__logger = logger
