@@ -10,9 +10,28 @@ from pytimeparse import parse
 from lib.mongo_db import db
 from flask import Blueprint
 from lib.time import india
+from services.historical_data.historical_data import HistoricalDataService
 
 blueprint = Blueprint('historical-data', __name__)
 
+
+@blueprint.cli.command("test")
+@click.option('--token', required=True, type=str)
+@click.option('--period', default="15minute")
+def test(token, period: str):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    historical_data_service = injector.get(HistoricalDataService)
+
+    now_utc = datetime.utcnow()
+    from_date = india.localize(datetime(now_utc.year, now_utc.month, 15, 9, 14, 0))
+    to_date = from_date + timedelta(minutes=30)
+
+    historical_data_service.download_and_save(token, from_date, to_date, period)
+    logger.info("done.")
+
+    data = historical_data_service.get_for_date(token, period, from_date + timedelta(minutes=1))
+    logger.info(data)
 
 
 @blueprint.cli.command("sync")

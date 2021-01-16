@@ -23,6 +23,9 @@ def recreate_db():
 
 
 
+
+
+
 @blueprint.cli.command("position")
 def position():
     injector = dependencies.create_injector()

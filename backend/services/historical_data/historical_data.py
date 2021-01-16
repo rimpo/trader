@@ -8,6 +8,9 @@ class HistoricalDataRepository(Protocol):
     def insert(self, token: int, period: str, data: List[dict]):
         pass
 
+    def get_for_date(self, token: int, period: str, for_date):
+        pass
+
 class HistoricalDataService:
     PERIOD_1m = "minute"
     PERIOD_3m = "3minute"
@@ -26,3 +29,7 @@ class HistoricalDataService:
     def download_and_save(self, token: int, from_date: datetime, to_date: datetime, period: str):
         data = self.__external_historical_data_service.get_historical_data(token, from_date, to_date, period)
         self.__repository.insert(token, period, data)
+
+    def get_for_date(self, token: int, period: str, for_date) -> dict:
+        """for_date needs to be in UTC"""
+        return self.__repository.get_for_date(token, period, for_date)
