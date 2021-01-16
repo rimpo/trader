@@ -14,6 +14,7 @@ from services import auth, candles
 def configure(binder: Binder):
     binder.bind(auth.AuthRepository, auth.Repository)
     binder.bind(candles.CandleRepository, candles.Repository)
+    binder.bind(candles.CandleService, candles.CandleService)
 
 
 class Container(Module):

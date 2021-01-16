@@ -1,5 +1,5 @@
 from typing import List, Protocol
-
+from injector import inject
 
 class CandleRepository(Protocol):
     def get_candles(self, token: int, period: str, length: int) -> List[dict]:
@@ -10,6 +10,7 @@ class CandleRepository(Protocol):
 
 
 class CandleService:
+    @inject
     def __init__(self, candle_repo: CandleRepository):
         self.__candle_repo = candle_repo
 

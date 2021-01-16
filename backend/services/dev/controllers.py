@@ -126,15 +126,66 @@ def download_candles(token: str, period: str, since: str):
 def macd_strategy(token: str):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
-    kite = injector.get(KiteConnect)
-    _ = injector.get(auth.AuthService)
+
+    from lib.mongo_db import db
+    import pandas as pd
+    import numpy as np
+    import talib
+    from talib.abstract import EMA, SMA
+    import pymongo
+    import time
+    from services.strategy import MacdIndicator
 
     india = timezone('Asia/Kolkata')
-    now_utc = datetime.utcnow()
-    try:
-        with db[f"ohlc_{token}_15minute"].watch(
-                [{'$match': {'operationType': 'insert'}}]) as stream:
-            for insert_change in stream:
-                print(insert_change)
-    except Exception as e:
-        logger.exception(e)
+
+    period = "15minute"
+    token = int(token)
+    fast_ema_length = 12
+    slow_ema_length = 26
+    signal_length = 9
+
+    macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
+
+    qty = 100
+    buy_cost = 0.0
+    sell_cost = 0.0
+    total_profit = 0.0
+    win = 0
+    order_count = 0
+    trade_open = 0
+    offset = 0
+    while True:
+        candles = db[f"ohlc_{token}_{period}"].find().sort("date", pymongo.ASCENDING).skip(offset).limit(50)
+
+        candles = list(candles)
+        if len(candles) != 50:
+            print(f"done. profit:{total_profit} win:{win} trade_count:{order_count} trade_open:{trade_open} win-ratio:{win/order_count} ")
+            break
+
+        crossing, macd_is_buy = macd_indicator.calculate(candles)
+
+        close = candles[-1]['close']
+        date = candles[-1]['date']
+        date = date + timedelta(hours=5, minutes=30)
+        if crossing:
+            if macd_is_buy:
+                buy_cost = close *  qty
+                print(f"{date} BUY {close}")
+                order_count += 1
+                trade_open = 1
+            else:
+                if trade_open:
+                    sell_cost = close * qty
+                    profit = sell_cost - buy_cost
+                    if profit > 0:
+                        # print(f"WIN {profit}!!")
+                        win += 1
+                    else:
+                        pass
+                        # print(f"LOSE {profit}**")
+                    total_profit += profit
+                    trade_open = 0
+                    print(f"{date} SELL {close}")
+        offset += 1
+
+

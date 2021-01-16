@@ -2,3 +2,5 @@ notebook
 pylint
 bandit
 flake8
+matplotlib
+matlab
