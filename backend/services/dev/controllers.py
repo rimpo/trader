@@ -134,7 +134,7 @@ def macd_strategy(token: str):
     from talib.abstract import EMA, SMA
     import pymongo
     import time
-    from services.strategy import MacdIndicator
+    from services.strategy import MacdIndicator, Strategy
 
     india = timezone('Asia/Kolkata')
 
@@ -144,22 +144,16 @@ def macd_strategy(token: str):
     slow_ema_length = 26
     signal_length = 9
 
+    strategy = Strategy(logger)
     macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
 
     qty = 100
-    buy_cost = 0.0
-    sell_cost = 0.0
-    total_profit = 0.0
-    win = 0
-    order_count = 0
-    trade_open = 0
     offset = 0
     while True:
         candles = db[f"ohlc_{token}_{period}"].find().sort("date", pymongo.ASCENDING).skip(offset).limit(50)
 
         candles = list(candles)
         if len(candles) != 50:
-            print(f"done. profit:{total_profit} win:{win} trade_count:{order_count} trade_open:{trade_open} win-ratio:{win/order_count} ")
             break
 
         crossing, macd_is_buy = macd_indicator.calculate(candles)
@@ -169,23 +163,12 @@ def macd_strategy(token: str):
         date = date + timedelta(hours=5, minutes=30)
         if crossing:
             if macd_is_buy:
-                buy_cost = close *  qty
+                strategy.long_entry(close, qty)
                 print(f"{date} BUY {close}")
-                order_count += 1
-                trade_open = 1
             else:
-                if trade_open:
-                    sell_cost = close * qty
-                    profit = sell_cost - buy_cost
-                    if profit > 0:
-                        # print(f"WIN {profit}!!")
-                        win += 1
-                    else:
-                        pass
-                        # print(f"LOSE {profit}**")
-                    total_profit += profit
-                    trade_open = 0
-                    print(f"{date} SELL {close}")
+                strategy.long_exit(close, qty)
+                print(f"{date} SELL {close}")
         offset += 1
+    strategy.show()
 
 

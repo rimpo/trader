@@ -4,7 +4,7 @@ from services.candles import CandleService
 import pandas as pd
 import numpy as np
 import talib
-from talib.abstract import EMA, SMA
+from talib.abstract import EMA, SMA, MACDEXT
 from injector import inject
 
 from lib.algos import cross
@@ -19,10 +19,15 @@ class MacdIndicator:
     def calculate(self, candles) -> (bool, bool):
         df = pd.DataFrame.from_dict(candles)
 
-        df['fast_ema'] = EMA(df['close'].values, timeperiod=self.__fast_ema_length)
-        df['slow_ema'] = EMA(df['close'].values, timeperiod=self.__slow_ema_length)
-        df['macd'] = df['fast_ema'] - df['slow_ema']
-        df['signal'] = SMA(df['macd'].values, timeperiod=self.__signal_length)
+        df['macd'], df['signal'], _ = MACDEXT(
+            df['close'],
+            fastperiod=self.__fast_ema_length,
+            fastmatype=1,
+            slowperiod=self.__slow_ema_length,
+            slowmatype=1,
+            signalperiod=self.__signal_length,
+            signalmatype=0
+        )
 
         macd = df['macd'].iloc[-1]
         signal = df['signal'].iloc[-1]
