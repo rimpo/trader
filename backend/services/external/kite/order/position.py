@@ -1,10 +1,11 @@
 from injector import inject
 from kiteconnect import KiteConnect
 from services.auth.auth import AuthService
-from typing import List
+from typing import List, Dict
 from collections import defaultdict
+from services.order.position import ExternalPositionService
 
-class PositionService:
+class PositionService(ExternalPositionService):
     @inject
     def __init__(self, auth: AuthService):
         self.__kite = auth.get_kite()
@@ -20,7 +21,7 @@ class PositionService:
         if position["filled_quantity"] != position['quantity']:
             raise Exception(f'position incorrect. filled_quantity != quantity {position}')
 
-    def get_open_position(self):
+    def get_open_position(self) -> Dict[str, int]:
         open_position = defaultdict(int)
         for position in self.get_positions_all():
             self.assert_position(position)
