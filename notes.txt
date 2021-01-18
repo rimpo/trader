@@ -1,11 +1,19 @@
 
-TODO:
+TODO All:
 
 - make the whole environment restartable
 - multi token support
 - working macd startegy (with exit strategy)
 - test for 1 week with live data
-- make replayable option for backtesting
+- make replayable option for backtesting (dont go live without this option)
+- adding addition protection:
+	- price api failure or invalid price
 - refactor
 	- direct db writing/reading in service (use repository or another service if not repo is not owns)
 	- services is getting too many folders need to make it intuitive
+
+
+17 Jan 2021:
+	- test ltp
+	- test historical data download
+	- test restart

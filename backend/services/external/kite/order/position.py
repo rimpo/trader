@@ -1,17 +1,21 @@
 from injector import inject
-from kiteconnect import KiteConnect
 from services.auth.auth import AuthService
 from typing import List, Dict
 from collections import defaultdict
 from services.order.position import ExternalPositionService
+from lib import log
+
 
 class PositionService(ExternalPositionService):
     @inject
-    def __init__(self, auth: AuthService):
+    def __init__(self, logger: log.Logger, auth: AuthService):
+        self.__logger = logger
         self.__kite = auth.get_kite()
 
     def get_positions_all(self) -> List[dict]:
-        return self.__kite.positions()
+        data = self.__kite.positions()
+        self.__logger.info(f"positions:{data}")
+        return data
 
     def __form_position_key(self, position) -> str:
         return f"{position['tradingsymbol']}-{position['exchange']}"
@@ -24,6 +28,7 @@ class PositionService(ExternalPositionService):
     def get_open_position(self) -> Dict[str, int]:
         open_position = defaultdict(int)
         for position in self.get_positions_all():
+            self.__logger.info(f"position:{position}")
             self.assert_position(position)
             if position['transaction_type'] == self.__kite.TRANSACTION_TYPE_BUY:
                 open_position[position['tradingsymbol']] += position['filled_quantity']

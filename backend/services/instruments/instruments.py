@@ -1,6 +1,13 @@
-from services.external.kite.instrument import InstrumentService as ExternalInstrumentService
 from injector import inject
-from typing import Protocol
+from typing import Protocol, List, Dict
+
+
+class ExternalInstrumentService(Protocol):
+    def get_instruments(self):
+        pass
+
+    def get_ltp(self, symbols: List[str]):
+        pass
 
 
 class InstrumentRepository(Protocol):
@@ -30,3 +37,10 @@ class InstrumentService:
 
     def get_token(self, symbol: int):
         return self.__repository.get_token(symbol)
+
+    def __assert_invalid_price(self):
+        pass
+
+    def get_ltp(self, tokens: List[int]) -> Dict[int, float]:
+        prices = self.__external_instrument_service.get_ltp([self.get_symbol(token) for token in tokens])
+        return {price['instrument_token'] : price['last_price'] for _, price in prices.items()}

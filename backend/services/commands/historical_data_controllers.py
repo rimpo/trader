@@ -20,13 +20,15 @@ def test(token, period: str):
     historical_data_service = injector.get(HistoricalDataService)
 
     now_utc = datetime.utcnow()
-    from_date = india.localize(datetime(now_utc.year, now_utc.month, 15, 9, 14, 0))
-    to_date = from_date + timedelta(minutes=10)
+    from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 13, 0, 0))
+    to_date = from_date + timedelta(minutes=15)
 
-    historical_data_service.download_and_save(token, period, from_date, to_date)
-    logger.info("done.")
+    logger.info(from_date)
 
-    data = historical_data_service.get_for_date(token, period, from_date + timedelta(minutes=1))
+    #historical_data_service.download_and_save(token, period, from_date, to_date)
+    #logger.info("done.")
+
+    data = historical_data_service.get_for_date(int(token), period, from_date)
     logger.info(data)
 
 

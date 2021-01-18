@@ -6,6 +6,7 @@ from kiteconnect import KiteConnect
 
 from lib.config import env, config
 from lib import log
+from lib.telegram_bot import TelegramBot
 
 from services import external
 from services import auth, instruments, historical_data, order
@@ -14,19 +15,22 @@ from services import auth, instruments, historical_data, order
 def configure(binder: Binder):
     binder.bind(auth.AuthRepository, auth.Repository)
 
+    binder.bind(instruments.ExternalInstrumentService, external.kite.InstrumentService)
     binder.bind(instruments.InstrumentService, instruments.InstrumentService)
     binder.bind(instruments.InstrumentRepository, instruments.Repository)
 
     binder.bind(historical_data.HistoricalDataService, historical_data.HistoricalDataService)
-    binder.bind(historical_data.HistoricalDataRepository, historical_data.Repository)
+    binder.bind(historical_data.HistoricalDataRepository, historical_data.repo.Repository)
 
-    binder.bind(historical_data.HistoricalDataRepository, historical_data.Repository)
-
-    binder.bind(order.ExternalPositionService, order.PositionService)
+    binder.bind(order.ExternalPositionService, external.kite.order.PositionService)
     binder.bind(order.PositionService, order.PositionService)
-    binder.bind(external.kite.order.PositionService, external.kite.order.PositionService)
 
 class Container(Module):
+
+    @provider
+    @singleton_scope
+    def provide_telegram_bot(self) -> TelegramBot:
+        return TelegramBot(access_token=env.TRADER_RIMPO_BOT_ACCESS_TOKEN)
 
     @provider
     @singleton_scope

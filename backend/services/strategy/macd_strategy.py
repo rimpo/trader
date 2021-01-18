@@ -12,6 +12,7 @@ import time
 import pymongo
 from lib.mongo_db import  db
 from typing import List
+import pytz
 
 class MacdIndicator:
     @inject
@@ -22,6 +23,7 @@ class MacdIndicator:
         self.__signal_length = signal_length
 
     def calculate(self, candles) -> (bool, bool):
+
         df = pd.DataFrame.from_dict(candles)
 
         df['macd'], df['signal'], _ = MACDEXT(
@@ -52,13 +54,12 @@ class MacdStrategy:
         self.__historical_data_service = historical_data_service
         self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
 
-    def run(self, tokens: List[int]):
+    def run(self, tokens: List[str]):
         now_utc = datetime.utcnow()
         from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
-        to_date = from_date + timedelta(minutes=10)
 
         period = "15minute"
-        interval = 5
+        interval = 15
 
         while True:
             now_utc = datetime.utcnow().astimezone(india)
@@ -69,8 +70,10 @@ class MacdStrategy:
             for token in tokens:
 
                 while True:
+                    self.__logger.debug(f"querying for {token} {period} {from_date}")
                     data = self.__historical_data_service.get_for_date(token, period, from_date)
-                    if data:
+                    if data is not None:
+                        self.__logger.debug(f"data:{data}")
                         break
                     time.sleep(15)
                     self.__logger.debug(f"token:{token} data not found for {from_date}")
@@ -79,10 +82,10 @@ class MacdStrategy:
                 self.__logger.debug(f"yay found new entry {from_date}!!")
 
                 # fetch past 50 candles
-                cursor_candles = db[f"ohlc_{period}"].find({"instrument_token": token, }).sort({"date": pymongo.DESCENDING}).limit(50)
+                cursor_candles = db[f"ohlc_{period}"].find({"instrument_token": token, }).sort("date", pymongo.DESCENDING).limit(50)
                 candles = list(cursor_candles)
-
-                crossing, macd_is_above = self.__macd_indicator.calculate(candles.reverse())
+                candles.reverse()
+                crossing, macd_is_above = self.__macd_indicator.calculate(candles)
                 if crossing:
                     if macd_is_above:
                         db["signals"].insert_one({

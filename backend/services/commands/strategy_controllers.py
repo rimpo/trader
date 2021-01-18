@@ -15,7 +15,7 @@ def macd(tokens: List[str]):
     logger = injector.get(log.Logger)
     macd_strategy = injector.get(MacdStrategy)
     logger.info(f"macd strategy starting for token {tokens}.")
-    macd_strategy.run([int(token) for token in tokens])
+    macd_strategy.run(tokens)
     logger.info("macd strategy stopped.")
 
 

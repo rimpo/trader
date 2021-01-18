@@ -3,6 +3,7 @@ import click
 from lib import dependencies
 from lib import log
 from services.external.kite.order import OrderService
+from services.order.position import PositionService
 
 from flask import Blueprint
 
@@ -21,3 +22,15 @@ def order(s: str, bs: str, q: int):
         order_service.buy_market_order_cnc(s, q)
     else:
         order_service.sell_market_order_cnc(s, q)
+
+
+@blueprint.cli.command("open-position")
+def open_position():
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    position_service = injector.get(PositionService)
+
+    positions = position_service.get_open_position()
+    logger.info(positions)
+
+

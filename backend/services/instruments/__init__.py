@@ -1,2 +1,2 @@
-from .instruments import InstrumentRepository, InstrumentService
+from .instruments import InstrumentRepository, InstrumentService, ExternalInstrumentService
 from .repo import Repository

@@ -18,3 +18,6 @@ class PositionService:
 
     def get_open_position(self) -> Dict[str, int]:
         return self.__external_position_service.get_open_position()
+
+    def open_position_convert_MIS_to_CNC(self):
+        pass
