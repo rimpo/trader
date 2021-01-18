@@ -1,13 +1,14 @@
 from injector import inject
 from services.auth.auth import AuthService
+from services.order.order import ExternalMarketOrderServiceCNC
 
 
-class OrderService:
+class MarketOrderService(ExternalMarketOrderServiceCNC):
     @inject
     def __init__(self, auth: AuthService):
         self.__kite = auth.get_kite()
 
-    def buy_market_order_cnc(self, symbol: str, qty: int):
+    def buy_cnc(self, symbol: str, qty: int):
         self.__kite.place_order(
             self.__kite.VARIETY_REGULAR,
             self.__kite.EXCHANGE_NSE,
@@ -18,7 +19,7 @@ class OrderService:
             order_type=self.__kite.ORDER_TYPE_MARKET
         )
 
-    def sell_market_order_cnc(self, symbol: str, qty: int):
+    def sell_cnc(self, symbol: str, qty: int):
         self.__kite.place_order(
             self.__kite.VARIETY_REGULAR,
             self.__kite.EXCHANGE_NSE,

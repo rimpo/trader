@@ -43,7 +43,6 @@ def simple(tokens: str):
     telegram_bot = injector.get(TelegramBot)
 
     tokens = [int(token) for token in tokens]
-
     # Note: quantity should be divisible by 4
     max_buy_quantity =  12
     flat_stop_loss_percent = 1.5
@@ -52,7 +51,6 @@ def simple(tokens: str):
         positions = position_service.get_open_position()
         signal = signal_service.get_unprocessed_signal(tokens)
         prices = instrument_service.get_ltp(tokens)
-
         if signal:
             # TAKE POSITION
             position = positions[signal.instrument_token]
@@ -79,6 +77,7 @@ def simple(tokens: str):
                     # TODO: short only when time is less 12:00pm and price is below 50 EMA
                     # TODO: sake of simplicity not going long
                     telegram_bot.send(f"{signal.instrument_token} SELL short")
+            signal_service.set_signal_processed(signal.id)
         else:
             # MANAGE RISK - BY REDUCING POSITION ON PROFIT
             for token in tokens:
