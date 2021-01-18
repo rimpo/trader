@@ -46,20 +46,23 @@ def sync(token, period: str, sleep_seconds: int, since: str):
 
     historical_data_service.download_and_save(token, period, from_date, to_date)
 
-    # curr_expected_time = india.localize(datetime(to_date.year, to_date.month, to_date.day, 9, 14, 0))
-
-    while True:
-        curr_time = datetime.utcnow().astimezone(india)
-        if curr_time.minute not in [0, 15, 30, 45]:
+    try:
+        while True:
+            curr_time = datetime.utcnow().astimezone(india)
+            if curr_time.minute not in [0, 15, 30, 45]:
+                time.sleep(sleep_seconds)
+                continue
             time.sleep(sleep_seconds)
-            continue
-        time.sleep(sleep_seconds)
 
-        curr_time = datetime.utcnow().astimezone(india)
-        # current time is 9:30:30 then from_date will be 9:13:30
-        from_date = curr_time - timedelta(minutes=17)
-        historical_data_service.download_and_save(token, period, from_date, curr_time)
-        logger.info(f"token:{token} from_date:{from_date} to_date:{to_date}")
+            curr_time = datetime.utcnow().astimezone(india)
+            # current time is 9:30:30 then from_date will be 9:13:30
+            from_date = curr_time - timedelta(minutes=17)
+            historical_data_service.download_and_save(token, period, from_date, curr_time)
+            logger.info(f"token:{token} from_date:{from_date} to_date:{to_date}")
+    except Exception as e:
+        logger.error(f"failed sync {e}")
+        pass
+
 
 
 

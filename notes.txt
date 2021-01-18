@@ -13,7 +13,11 @@ TODO All:
 	- services is getting too many folders need to make it intuitive
 
 
-17 Jan 2021:
-	- test ltp
-	- test historical data download
-	- test restart
+18 Jan 2021:
+	- test ltp ...done
+	- test historical data download ...done
+	- test restart ...done
+	- test signals - write signal as processed !!!
+
+19 Jan 2021:
+	- run with less orders for one script
