@@ -13,6 +13,7 @@ import pymongo
 from lib.mongo_db import  db
 from typing import List
 import pytz
+from services.strategy.signal import SignalService
 
 class MacdIndicator:
     @inject
@@ -49,10 +50,11 @@ class MacdIndicator:
 
 class MacdStrategy:
     @inject
-    def __init__(self, logger: log.Logger, historical_data_service: HistoricalDataService):
+    def __init__(self, logger: log.Logger, historical_data_service: HistoricalDataService, signal_service: SignalService):
         self.__logger = logger
         self.__historical_data_service = historical_data_service
         self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
+        self.__signal_service = signal_service
 
     def run(self, tokens: List[str]):
         now_utc = datetime.utcnow()
@@ -62,24 +64,23 @@ class MacdStrategy:
         interval = 15
 
         while True:
+            # JUMPING to the right time
             now_utc = datetime.utcnow().astimezone(india)
             if from_date + timedelta(minutes=interval) < now_utc:
-                self.__logger.debug(f"ignore {from_date}")
+                # self.__logger.debug(f"ignore {from_date}")
                 from_date += timedelta(minutes=interval)
                 continue
-            for token in tokens:
 
+            for token in tokens:
+                # COMPLICADO - waiting for data to arrive
                 while True:
-                    self.__logger.debug(f"querying for {token} {period} {from_date}")
                     data = self.__historical_data_service.get_for_date(token, period, from_date)
                     if data is not None:
-                        self.__logger.debug(f"data:{data}")
+                        self.__logger.debug(f"data {token} {period} {from_date} {data}. Yay !!")
                         break
                     time.sleep(15)
-                    self.__logger.debug(f"token:{token} data not found for {from_date}")
+                    self.__logger.debug(f"token:{token} data not found for {from_date} :(")
                     continue
-
-                self.__logger.debug(f"yay found new entry {from_date}!!")
 
                 # fetch past 50 candles
                 cursor_candles = db[f"ohlc_{period}"].find({"instrument_token": token, }).sort("date", pymongo.DESCENDING).limit(50)
@@ -88,20 +89,10 @@ class MacdStrategy:
                 crossing, macd_is_above = self.__macd_indicator.calculate(candles)
                 if crossing:
                     if macd_is_above:
-                        db["signals"].insert_one({
-                            "instrument_token": token,
-                            "signal": "BUY",
-                            "date": datetime.utcnow(),
-                            "processed": False}
-                        )
+                        self.__signal_service.save_buy_signal(token, datetime.utcnow())
                         self.__logger.debug(f"buy signal for {token}!!")
                     else:
-                        db["signals"].insert_one({
-                            "instrument_token": token,
-                            "signal": "SELL",
-                            "date": datetime.utcnow(),
-                            "processed": False}
-                        )
+                        self.__signal_service.save_sell_signal(token, datetime.utcnow())
                         self.__logger.debug(f"sell signal for {token}!!")
             from_date += timedelta(minutes=interval)
 

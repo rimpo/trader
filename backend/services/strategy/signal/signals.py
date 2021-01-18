@@ -2,6 +2,7 @@ from typing import Protocol
 from datetime import datetime
 import enum
 from dataclasses import dataclass
+from injector import inject
 
 
 BUY_SIGNAL = "BUY"
@@ -24,11 +25,12 @@ class SignalRepository:
     def save_signal(self, token: str, signal_type: str, date: datetime):
         pass
 
-    def get_unprocessed_signal(self, token: int):
+    def get_unprocessed_signal(self):
         pass
 
 
 class SignalService:
+    @inject
     def __init__(self, repository: SignalRepository):
         self.__repository = repository
 

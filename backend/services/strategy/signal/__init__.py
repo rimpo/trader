@@ -1,2 +1,2 @@
-from .signals import SignalService, SignalRepository, SignalType
+from .signals import SignalService, SignalRepository
 from . import repo

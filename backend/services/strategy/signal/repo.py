@@ -17,7 +17,7 @@ class Repository(SignalRepository):
             "instrument_token": token
         })
 
-    def get_unprocessed_signal(self, token: int) -> Optional[Signal]:
+    def get_unprocessed_signal(self) -> Optional[Signal]:
         signal = list(db["signal"].find({"processed": False}).limit(1))
         if len(signal) > 0:
             return Signal(

@@ -25,8 +25,9 @@ def configure(binder: Binder):
     binder.bind(order.ExternalPositionService, external.kite.order.PositionService)
     binder.bind(order.PositionService, order.PositionService)
 
-    binder.bind(order.ExternalMarketOrderServiceCNC, external.kite.order.OrderService)
-    binder.bind(order.OrderService, order.OrderService)
+    binder.bind(order.ExternalMarketOrderServiceCNC, external.kite.order.MarketOrderService)
+    binder.bind(order.MarketOrderServiceCNC, order.MarketOrderServiceCNC)
+
 
 class Container(Module):
 

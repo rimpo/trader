@@ -2,7 +2,7 @@ from .controllers import blueprint
 import click
 from lib import dependencies
 from lib import log
-from services.external.kite.order import OrderService
+from services.external.kite.order import MarketOrderService
 from services.order.position import PositionService
 
 from flask import Blueprint
@@ -16,7 +16,7 @@ blueprint = Blueprint('order', __name__)
 def order(s: str, bs: str, q: int):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
-    order_service = injector.get(OrderService)
+    order_service = injector.get(MarketOrderService)
 
     if bs == "B":
         order_service.buy_market_order_cnc(s, q)

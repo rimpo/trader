@@ -5,7 +5,7 @@ from flask import Blueprint
 from services.strategy import MacdStrategy
 from lib.mongo_db import db
 import time
-from services.order import PositionService
+from services.order import PositionService, MarketOrderServiceCNC
 from services.instruments import InstrumentService
 from services.strategy.signal import SignalService
 from lib.config import env
@@ -41,6 +41,7 @@ def simple(tokens: str):
     instrument_service = injector.get(InstrumentService)
     signal_service = injector.get(SignalService)
     telegram_bot = injector.get(TelegramBot)
+    market_order_service_cnc = injector.get(MarketOrderServiceCNC)
 
     tokens = [int(token) for token in tokens]
     # Note: quantity should be divisible by 4
@@ -49,10 +50,10 @@ def simple(tokens: str):
 
     while True:
         positions = position_service.get_open_position()
-        signal = signal_service.get_unprocessed_signal(tokens)
+        signal = signal_service.get_unprocessed_signal()
         prices = instrument_service.get_ltp(tokens)
         if signal:
-            # TAKE POSITION
+            # TAKE POSITION SIGNAL
             position = positions[signal.instrument_token]
 
             if position['quantity'] > 0:
@@ -60,39 +61,49 @@ def simple(tokens: str):
                     # do nothing we are already long
                     pass
                 else:
-                    # close long position
+                    market_order_service_cnc.sell(signal.instrument_token, position['quantity'])
                     telegram_bot.send(f"{signal.instrument_token} SELL all")
             elif position['quantity'] < 0:
                 if signal.is_buy_signal():
                     # close short position
-                    # TODO: sake of simplicity not going long
+                    # TODO: sake of simplicity not going short
                     telegram_bot.send(f"{signal.instrument_token} BUY 100 {prices[signal.instrument_token]}")
                 else:
                     # do nothing we are already short
                     pass
             else:
                 if signal.is_buy_signal():
+                    market_order_service_cnc.sell(signal.instrument_token, position['quantity'])
                     telegram_bot.send(f"{signal.instrument_token} BUY long")
                 else:
                     # TODO: short only when time is less 12:00pm and price is below 50 EMA
-                    # TODO: sake of simplicity not going long
-                    telegram_bot.send(f"{signal.instrument_token} SELL short")
+                    # TODO: sake of simplicity not going short
+                    # telegram_bot.send(f"{signal.instrument_token} SELL short")
+                    pass
             signal_service.set_signal_processed(signal.id)
         else:
             # MANAGE RISK - BY REDUCING POSITION ON PROFIT
             for token in tokens:
                 ltp = prices[token]
+                position = positions[token]
                 avg_price = position['average_price']
                 qty = position['quantity']
-                if is_ltp_in_loss(ltp, avg_price, flat_stop_loss_percent):
-                    # TODO call sell all
-                    pass
-                if is_ltp_in_profit(ltp, avg_price, 1.0):
-                    qty_to_close = get_qty_to_close(qty, max_buy_quantity)
-                    # TODO: call sell
-                if is_ltp_in_profit(ltp, avg_price, 1.5):
-                    qty_to_close = get_qty_to_close(qty, max_buy_quantity)
-                    # TODO: call sell
+                if qty > 0:
+                    if is_ltp_in_loss(ltp, avg_price, flat_stop_loss_percent):
+                        # SELL ALL - stop loss hit
+                        market_order_service_cnc.sell(token, qty)
+
+                    if is_ltp_in_profit(ltp, avg_price, 1.0):
+                        # SELL 25 percent
+                        qty_to_close = get_qty_to_close(qty, max_buy_quantity)
+                        market_order_service_cnc.sell(token, qty_to_close)
+
+                    if is_ltp_in_profit(ltp, avg_price, 1.5):
+                        # SELL another 25 percent
+                        qty_to_close = get_qty_to_close(qty, max_buy_quantity)
+                        market_order_service_cnc.sell(token, qty_to_close)
+                else:
+                    logger.debug("no position is open !")
 
         time.sleep(15)
 

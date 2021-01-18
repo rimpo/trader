@@ -45,6 +45,8 @@ services:
 
   mongo-db:
     image: mongo
+    logging:
+      driver: none
     environment:
       - MONGO_INITDB_DATABASE
       - MONGO_INITDB_ROOT_USERNAME

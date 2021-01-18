@@ -20,6 +20,6 @@ class Repository:
 
     def get_token(self, symbol: str) -> str:
         data = db["instruments"].find_one({"tradingsymbol": symbol})
-        if len(list(data)) > 0:
+        if data and len(list(data)) > 0:
             return data['instrument_token']
         raise Exception(f"Symbol not found in instruments. {symbol}")
