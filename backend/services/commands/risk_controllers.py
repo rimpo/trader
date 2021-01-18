@@ -73,7 +73,7 @@ def simple(tokens: str):
                     pass
             else:
                 if signal.is_buy_signal():
-                    market_order_service_cnc.sell(signal.instrument_token, position['quantity'])
+                    market_order_service_cnc.sell(signal.instrument_token, max_buy_quantity)
                     telegram_bot.send(f"{signal.instrument_token} BUY long")
                 else:
                     # TODO: short only when time is less 12:00pm and price is below 50 EMA
