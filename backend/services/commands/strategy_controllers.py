@@ -6,6 +6,8 @@ from services.strategy.signal import SignalService
 from services.strategy import MacdStrategy
 from lib.telegram_bot import TelegramBot
 from typing import List
+from datetime import datetime
+from lib.time import india
 
 blueprint = Blueprint('strategy', __name__)
 
@@ -22,7 +24,8 @@ def generate_signal(token: str, bs):
 
 @blueprint.cli.command("macd")
 @click.argument('tokens', nargs=-1)
-def macd(tokens: List[str]):
+@click.option('--interval', default=15)
+def macd(tokens: List[str], interval: int):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
     macd_strategy = injector.get(MacdStrategy)
@@ -30,7 +33,7 @@ def macd(tokens: List[str]):
 
     logger.info(f"macd strategy starting for token {tokens}.")
     try:
-        macd_strategy.run(tokens, interval=5)
+        macd_strategy.run(tokens, interval, start_date=datetime.utcnow().astimezone(india))
     except Exception as e:
         logger.exception("macd strategy stopped.")
         telegram_bot.send(f"strategy failed !! {e}")

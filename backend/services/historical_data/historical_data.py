@@ -1,6 +1,7 @@
 from injector import inject
 from typing import Protocol, List
 from datetime import datetime
+import time
 
 
 class ExternalHistoricalDataService(Protocol):
@@ -15,10 +16,10 @@ class HistoricalDataRepository(Protocol):
     def insert(self, token: int, interval: int, data: List[dict]):
         pass
 
-    def get_for_date(self, token: int, interval: int, for_date):
+    def get_candle(self, token: int, interval: int, for_date: datetime):
         pass
 
-    def get_candles(self, token: str, interval: int, no_of_candles: int):
+    def get_candles(self, token: str, interval: int, no_of_candles: int, from_date: datetime):
         pass
 
 
@@ -45,9 +46,16 @@ class HistoricalDataService:
         data = self.__external_historical_data_service.get_historical_data_wait(token, date, interval, sleep_seconds)
         self.__repository.insert(token, interval, data)
 
-    def get_for_date(self, token: int, period: str, for_date) -> dict:
+    def get_candle(self, token: int, interval: str, for_date: datetime) -> dict:
         """for_date needs to be in UTC"""
-        return self.__repository.get_for_date(token, period, for_date)
+        return self.__repository.get_candle(token, interval, for_date)
 
-    def get_candles(self, token: str, interval: int, no_of_candles: int) -> List[dict]:
-        return self.__repository.get_candles(token, interval, no_of_candles)
+    def get_candle_wait(self, token: int, interval: str, for_date: datetime, sleep_seconds: int = 15) -> dict:
+        while True:
+            data = self.__repository.get_candle(token, interval, for_date)
+            if data is not None:
+                return data
+            time.sleep(sleep_seconds)
+
+    def get_candles(self, token: str, interval: int, no_of_candles: int, from_date: datetime) -> List[dict]:
+        return self.__repository.get_candles(token, interval, no_of_candles, from_date)

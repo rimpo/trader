@@ -57,32 +57,16 @@ class MacdStrategy:
         self.__signal_service = signal_service
         self.__no_of_candles = 50
 
-    def run(self, tokens: List[str], interval: int):
-        now_utc = datetime.utcnow()
-        from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
-
-
+    def run(self, tokens: List[str], interval: int, start_date: datetime):
+        curr_time = start_date
         while True:
-            # JUMPING to the right time
-            now_utc = datetime.utcnow().astimezone(india)
-            if from_date + timedelta(minutes=interval) < now_utc:
-                # self.__logger.debug(f"ignore {from_date}")
-                from_date += timedelta(minutes=interval)
-                continue
-
             for token in tokens:
-                # COMPLICADO - waiting for data to arrive
-                while True:
-                    data = self.__historical_data_service.get_for_date(token, interval, from_date)
-                    if data is not None:
-                        self.__logger.debug(f"data {token} {interval}min {from_date} {data}. Yay !!")
-                        break
-                    time.sleep(15)
-                    self.__logger.debug(f"token:{token} data not found for {from_date} :(")
-                    continue
+                data = self.__historical_data_service.get_candle_wait(token, interval, curr_time)
+                self.__logger.debug(f"token:{token} {interval}min date:{curr_time} data:{data}. Yay !!")
 
                 candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles)
                 candles.reverse()
+
                 crossing, macd_is_above = self.__macd_indicator.calculate(candles)
                 if crossing:
                     if macd_is_above:
@@ -91,6 +75,6 @@ class MacdStrategy:
                     else:
                         self.__signal_service.save_sell_signal(token, datetime.utcnow())
                         self.__logger.debug(f"sell signal for {token}!!")
-            from_date += timedelta(minutes=interval)
+            curr_time += timedelta(minutes=interval)
 
 
