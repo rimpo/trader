@@ -15,7 +15,7 @@ class Repository:
 
     def get_symbol(self, token: str) -> str:
         data = db["instruments"].find_one({"instrument_token": int(token)})
-        if data is not None
+        if data is not None:
             return data["tradingsymbol"]
         raise Exception(f"Token not found {token}")
 
