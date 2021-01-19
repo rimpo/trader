@@ -9,7 +9,7 @@ from lib import log
 from lib.telegram_bot import TelegramBot
 
 from services import external
-from services import auth, instruments, historical_data, order
+from services import auth, instruments, historical_data, order, strategy
 
 
 def configure(binder: Binder):
@@ -31,6 +31,8 @@ def configure(binder: Binder):
 
     binder.bind(order.ExternalMISMarketOrderService, external.kite.order.MarketOrderService)
     binder.bind(order.MISMarketOrderService, order.MISMarketOrderService)
+
+    binder.bind(strategy.signal.SignalRepository, strategy.signal.repo.Repository)
 
 
 class Container(Module):

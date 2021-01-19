@@ -56,23 +56,28 @@ def simple(tokens: str):
             if signal:
                 # TAKE POSITION SIGNAL
                 position = positions[signal.instrument_token]
-
-                if position['quantity'] > 0:
-                    if signal.is_buy_signal():
-                        # do nothing we are already long
-                        pass
-                    else:
-                        market_order_service.sell(signal.instrument_token, position['quantity'])
-                        telegram_bot.send(f"{signal.instrument_token} SELL all")
-                elif position['quantity'] < 0:
-                    if signal.is_buy_signal():
-                        # close short position
-                        # TODO: sake of simplicity not going short
-                        telegram_bot.send(f"{signal.instrument_token} BUY 100 {prices[signal.instrument_token]}")
-                    else:
-                        # do nothing we are already short
-                        pass
+                logger.info(f"Got signal {signal}!!")
+                logger.info(positions)
+                logger.info(prices)
+                if position and position['quantity'] != 0:
+                    # on valid position
+                    if position['quantity'] > 0:
+                        if signal.is_buy_signal():
+                            # do nothing we are already long
+                            pass
+                        else:
+                            market_order_service.sell(signal.instrument_token, position['quantity'])
+                            telegram_bot.send(f"{signal.instrument_token} SELL all")
+                    elif position['quantity'] < 0:
+                        if signal.is_buy_signal():
+                            # close short position
+                            # TODO: sake of simplicity not going short
+                            telegram_bot.send(f"{signal.instrument_token} BUY 100 {prices[signal.instrument_token]}")
+                        else:
+                            # do nothing we are already short
+                            pass
                 else:
+                    # on position quantity as 0 or no position
                     if signal.is_buy_signal():
                         market_order_service.sell(signal.instrument_token, max_buy_quantity)
                         telegram_bot.send(f"{signal.instrument_token} BUY long")
