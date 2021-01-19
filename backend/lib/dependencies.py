@@ -20,6 +20,7 @@ def configure(binder: Binder):
     binder.bind(instruments.InstrumentRepository, instruments.Repository)
 
     binder.bind(historical_data.HistoricalDataService, historical_data.HistoricalDataService)
+    binder.bind(historical_data.ExternalHistoricalDataService, external.kite.HistoricalDataService)
     binder.bind(historical_data.HistoricalDataRepository, historical_data.repo.Repository)
 
     binder.bind(order.ExternalPositionService, external.kite.order.PositionService)

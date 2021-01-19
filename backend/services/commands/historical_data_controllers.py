@@ -13,8 +13,8 @@ blueprint = Blueprint('historical-data', __name__)
 
 @blueprint.cli.command("test")
 @click.option('--token', required=True, type=str)
-@click.option('--period', default="15minute")
-def test(token, period: str):
+@click.option('--interval', default=15, type=int)
+def test(token, interval: int):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
     historical_data_service = injector.get(HistoricalDataService)
@@ -23,18 +23,18 @@ def test(token, period: str):
     from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 13, 0, 0))
     to_date = from_date + timedelta(minutes=15)
 
-    logger.info(from_date)
+    logger.info(from_date, to_date)
 
-    #historical_data_service.download_and_save(token, period, from_date, to_date)
-    #logger.info("done.")
+    historical_data_service.download_and_save(token, interval, from_date, to_date)
+    logger.info("done.")
 
-    data = historical_data_service.get_for_date(int(token), period, from_date)
+    data = historical_data_service.get_for_date(int(token), interval, from_date)
     logger.info(data)
 
 
 @blueprint.cli.command("sync")
 @click.option('--token', required=True, type=str)
-@click.option('--period', default="15minute")
+@click.option('--interval', default="15")
 @click.option('--sleep-seconds', default=10)
 @click.option('--since', default="3d")
 def sync(token, period: str, sleep_seconds: int, since: str):
@@ -46,7 +46,7 @@ def sync(token, period: str, sleep_seconds: int, since: str):
 
     historical_data_service.download_and_save(token, period, from_date, to_date)
 
-    comparison_minute  =  []
+    comparison_minute = []
     interval = 0
     if period == "15minute":
         comparison_minute = [0, 15, 30, 45]
@@ -54,8 +54,6 @@ def sync(token, period: str, sleep_seconds: int, since: str):
     elif period == "5minute":
         comparison_minute = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
         interval = 7
-
-
 
     try:
         while True:
@@ -66,7 +64,7 @@ def sync(token, period: str, sleep_seconds: int, since: str):
                 curr_time = datetime.utcnow().astimezone(india)
                 # current time is 9:30:30 then from_date will be 9:13:30
                 from_date = curr_time - timedelta(minutes=interval)
-                historical_data_service.download_and_save(token, period, from_date, curr_time)
+                historical_data_service.download_and_save(token, interval, from_date, curr_time)
             else:
                 logger.info(f"{curr_time.minute} not in {comparison_minute}")
                 time.sleep(sleep_seconds)

@@ -55,13 +55,12 @@ class MacdStrategy:
         self.__historical_data_service = historical_data_service
         self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=5)
         self.__signal_service = signal_service
+        self.__no_of_candles = 50
 
-    def run(self, tokens: List[str], period: str, interval: int):
+    def run(self, tokens: List[str], interval: int):
         now_utc = datetime.utcnow()
         from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
 
-        # period = "15minute"
-        # interval = 15
 
         while True:
             # JUMPING to the right time
@@ -74,17 +73,15 @@ class MacdStrategy:
             for token in tokens:
                 # COMPLICADO - waiting for data to arrive
                 while True:
-                    data = self.__historical_data_service.get_for_date(token, period, from_date)
+                    data = self.__historical_data_service.get_for_date(token, interval, from_date)
                     if data is not None:
-                        self.__logger.debug(f"data {token} {period} {from_date} {data}. Yay !!")
+                        self.__logger.debug(f"data {token} {interval}min {from_date} {data}. Yay !!")
                         break
                     time.sleep(15)
                     self.__logger.debug(f"token:{token} data not found for {from_date} :(")
                     continue
 
-                # fetch past 50 candles
-                cursor_candles = db[f"ohlc_{period}"].find({"instrument_token": token, }).sort("date", pymongo.DESCENDING).limit(50)
-                candles = list(cursor_candles)
+                candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles)
                 candles.reverse()
                 crossing, macd_is_above = self.__macd_indicator.calculate(candles)
                 if crossing:

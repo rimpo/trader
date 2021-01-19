@@ -30,7 +30,7 @@ def macd(tokens: List[str]):
 
     logger.info(f"macd strategy starting for token {tokens}.")
     try:
-        macd_strategy.run(tokens, period="5minute", interval=5)
+        macd_strategy.run(tokens, interval=5)
     except Exception as e:
         logger.exception("macd strategy stopped.")
         telegram_bot.send(f"strategy failed !! {e}")
