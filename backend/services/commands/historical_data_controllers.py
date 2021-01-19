@@ -8,6 +8,7 @@ from lib.time import india
 from services.historical_data.historical_data import HistoricalDataService
 import time
 from typing import List
+from lib.telegram_bot import TelegramBot
 
 blueprint = Blueprint('historical-data', __name__)
 
@@ -42,6 +43,7 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
     historical_data_service = injector.get(HistoricalDataService)
+    telegram_bot = injector.get(TelegramBot)
 
     # Download historical data from now to some defined time in the past
     to_date = datetime.utcnow().astimezone(india)
@@ -63,6 +65,7 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
                 continue
     except Exception as e:
         logger.error(f"failed sync {e}")
+        telegram_bot.send("historical data sync failed !!")
         pass
 
 
