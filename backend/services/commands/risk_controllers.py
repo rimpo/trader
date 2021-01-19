@@ -46,7 +46,7 @@ def simple(tokens: str):
     tokens = [int(token) for token in tokens]
     # Note: quantity should be divisible by 4
     max_buy_quantity =  12
-    flat_stop_loss_percent = 1.5
+    flat_stop_loss_percent = 2
 
     try:
         while True:
@@ -104,12 +104,12 @@ def simple(tokens: str):
                             # SELL ALL - stop loss hit
                             market_order_service.sell(token, qty)
 
-                        if is_ltp_in_profit(ltp, avg_price, 1.0):
+                        if is_ltp_in_profit(ltp, avg_price, 1.5):
                             # SELL 25 percent
                             qty_to_close = get_qty_to_close(qty, max_buy_quantity)
                             market_order_service.sell(token, qty_to_close)
 
-                        if is_ltp_in_profit(ltp, avg_price, 1.5):
+                        if is_ltp_in_profit(ltp, avg_price, 2.0):
                             # SELL another 25 percent
                             qty_to_close = get_qty_to_close(qty, max_buy_quantity)
                             market_order_service.sell(token, qty_to_close)

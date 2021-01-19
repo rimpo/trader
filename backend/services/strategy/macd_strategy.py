@@ -70,10 +70,10 @@ class MacdStrategy:
                 crossing, macd_is_above = self.__macd_indicator.calculate(candles)
                 if crossing:
                     if macd_is_above:
-                        self.__signal_service.save_buy_signal(token, datetime.utcnow())
+                        self.__signal_service.save_buy_signal(token, candles[-1]["date"])
                         self.__logger.debug(f"buy signal for {token}!!")
                     else:
-                        self.__signal_service.save_sell_signal(token, datetime.utcnow())
+                        self.__signal_service.save_sell_signal(token, candles[-1]["date"])
                         self.__logger.debug(f"sell signal for {token}!!")
             curr_time += timedelta(minutes=interval)
 
