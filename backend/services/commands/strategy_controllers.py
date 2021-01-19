@@ -4,6 +4,7 @@ from lib import log
 from flask import Blueprint
 from services.strategy.signal import SignalService
 from services.strategy import MacdStrategy
+from lib.telegram_bot import TelegramBot
 from typing import List
 
 blueprint = Blueprint('strategy', __name__)
@@ -25,8 +26,15 @@ def macd(tokens: List[str]):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
     macd_strategy = injector.get(MacdStrategy)
+    telegram_bot = injector.get(TelegramBot)
+
     logger.info(f"macd strategy starting for token {tokens}.")
-    macd_strategy.run(tokens)
+    try:
+        macd_strategy.run(tokens, period="5minute", interval=5)
+    except Exception as e:
+        logger.exception("macd strategy stopped.")
+        telegram_bot.send(f"strategy failed !! {e}")
+
     logger.info("macd strategy stopped.")
 
 

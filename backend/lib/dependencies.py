@@ -28,6 +28,9 @@ def configure(binder: Binder):
     binder.bind(order.ExternalMarketOrderServiceCNC, external.kite.order.MarketOrderService)
     binder.bind(order.MarketOrderServiceCNC, order.MarketOrderServiceCNC)
 
+    binder.bind(order.ExternalMISMarketOrderService, external.kite.order.MarketOrderService)
+    binder.bind(order.MISMarketOrderService, order.MISMarketOrderService)
+
 
 class Container(Module):
 

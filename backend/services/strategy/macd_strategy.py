@@ -53,15 +53,15 @@ class MacdStrategy:
     def __init__(self, logger: log.Logger, historical_data_service: HistoricalDataService, signal_service: SignalService):
         self.__logger = logger
         self.__historical_data_service = historical_data_service
-        self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
+        self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=5)
         self.__signal_service = signal_service
 
-    def run(self, tokens: List[str]):
+    def run(self, tokens: List[str], period: str, interval: int):
         now_utc = datetime.utcnow()
         from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
 
-        period = "15minute"
-        interval = 15
+        # period = "15minute"
+        # interval = 15
 
         while True:
             # JUMPING to the right time

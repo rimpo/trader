@@ -46,19 +46,31 @@ def sync(token, period: str, sleep_seconds: int, since: str):
 
     historical_data_service.download_and_save(token, period, from_date, to_date)
 
+    comparison_minute  =  []
+    interval = 0
+    if period == "15minute":
+        comparison_minute = [0, 15, 30, 45]
+        interval = 17
+    elif period == "5minute":
+        comparison_minute = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+        interval = 7
+
+
+
     try:
         while True:
             curr_time = datetime.utcnow().astimezone(india)
-            if curr_time.minute not in [0, 15, 30, 45]:
+            if curr_time.minute in comparison_minute:
+                time.sleep(sleep_seconds)
+                logger.info(f"token:{token} from_date:{from_date} to_date:{to_date}")
+                curr_time = datetime.utcnow().astimezone(india)
+                # current time is 9:30:30 then from_date will be 9:13:30
+                from_date = curr_time - timedelta(minutes=interval)
+                historical_data_service.download_and_save(token, period, from_date, curr_time)
+            else:
+                logger.info(f"{curr_time.minute} not in {comparison_minute}")
                 time.sleep(sleep_seconds)
                 continue
-            time.sleep(sleep_seconds)
-
-            curr_time = datetime.utcnow().astimezone(india)
-            # current time is 9:30:30 then from_date will be 9:13:30
-            from_date = curr_time - timedelta(minutes=17)
-            historical_data_service.download_and_save(token, period, from_date, curr_time)
-            logger.info(f"token:{token} from_date:{from_date} to_date:{to_date}")
     except Exception as e:
         logger.error(f"failed sync {e}")
         pass
