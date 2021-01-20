@@ -46,7 +46,7 @@ def simple(tokens: str):
     tokens = [int(token) for token in tokens]
     # Note: quantity should be divisible by 4
     max_buy_quantity =  12
-    flat_stop_loss_percent = 1.0
+    flat_stop_loss_percent = 1.5
 
     try:
         while True:
@@ -97,17 +97,21 @@ def simple(tokens: str):
                     ltp = prices[token]
                     avg_price = position['average_price']
                     qty = position['quantity']
+                    logger.debug(f"status: qty:{qty} avg_price:{avg_price} ltp:{ltp}")
                     if qty > 0:
                         if is_ltp_in_loss(ltp, avg_price, flat_stop_loss_percent):
                             # SELL ALL - stop loss hit
+                            logger.debug(f"sell: qty:{qty} avg_price:{avg_price} ltp:{ltp}")
                             market_order_service.sell(token, qty)
-                        elif is_ltp_in_profit(ltp, avg_price, 0.9):
+                        if qty == max_buy_quantity and is_ltp_in_profit(ltp, avg_price, 1.5):
                             # SELL 25 percent
                             qty_to_close = get_qty_to_close(qty, max_buy_quantity)
+                            logger.debug(f"sell: qty:{qty_to_close} avg_price:{avg_price} ltp:{ltp}")
                             market_order_service.sell(token, qty_to_close)
-                        elif is_ltp_in_profit(ltp, avg_price, 1.5):
+                        if qty == 3*max_buy_quantity/4 and is_ltp_in_profit(ltp, avg_price, 2):
                             # SELL another 25 percent
                             qty_to_close = get_qty_to_close(qty, max_buy_quantity)
+                            logger.debug(f"sell: qty:{qty_to_close} avg_price:{avg_price} ltp:{ltp}")
                             market_order_service.sell(token, qty_to_close)
                     else:
                         logger.debug(f"no position is open !. qty:{qty}")

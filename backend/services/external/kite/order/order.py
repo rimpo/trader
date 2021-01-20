@@ -41,7 +41,7 @@ class MarketOrderService(ExternalMarketOrderServiceCNC, ExternalMISMarketOrderSe
             self.__kite.EXCHANGE_NSE,
             symbol,
             transaction_type=self.__kite.TRANSACTION_TYPE_BUY,
-            quantity=qty,
+            quantity=int(qty),
             product=self.__kite.PRODUCT_MIS,
             order_type=self.__kite.ORDER_TYPE_MARKET
         )
@@ -53,7 +53,7 @@ class MarketOrderService(ExternalMarketOrderServiceCNC, ExternalMISMarketOrderSe
             self.__kite.EXCHANGE_NSE,
             symbol,
             transaction_type=self.__kite.TRANSACTION_TYPE_SELL,
-            quantity=qty,
+            quantity=int(qty),
             product=self.__kite.PRODUCT_MIS,
             order_type=self.__kite.ORDER_TYPE_MARKET
         )

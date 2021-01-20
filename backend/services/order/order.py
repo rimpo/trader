@@ -49,4 +49,4 @@ class MISMarketOrderService:
 
     def sell(self, token: str, qty: int):
         symbol = self.__instrument_service.get_symbol(token)
-        self.__external_order_service.buy_mis(symbol, qty)
+        self.__external_order_service.sell_mis(symbol, qty)
