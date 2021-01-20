@@ -2,6 +2,7 @@ from injector import inject
 from typing import Protocol, List
 from datetime import datetime
 import time
+from lib import log
 
 
 class ExternalHistoricalDataService(Protocol):
@@ -34,9 +35,10 @@ class HistoricalDataService:
     PERIOD_1d = "day"
 
     @inject
-    def __init__(self, external_historical_data_service: ExternalHistoricalDataService, repository: HistoricalDataRepository):
+    def __init__(self, logger: log.Logger, external_historical_data_service: ExternalHistoricalDataService, repository: HistoricalDataRepository):
         self.__external_historical_data_service = external_historical_data_service
         self.__repository = repository
+        self.__logger = logger
 
     def download_and_save(self, token: int, interval: int, from_date: datetime, to_date: datetime):
         data = self.__external_historical_data_service.get_historical_data(token, interval, from_date, to_date)
@@ -44,7 +46,7 @@ class HistoricalDataService:
 
     def wait_download_and_save(self, token: int, date: datetime, interval: int, sleep_seconds: int = 15):
         data = self.__external_historical_data_service.get_historical_data_wait(token, date, interval, sleep_seconds)
-        self.__repository.insert(token, interval, data)
+        self.__repository.insert_one(token, interval, data)
 
     def get_candle(self, token: int, interval: str, for_date: datetime) -> dict:
         """for_date needs to be in UTC"""
@@ -54,7 +56,9 @@ class HistoricalDataService:
         while True:
             data = self.__repository.get_candle(token, interval, for_date)
             if data is not None:
+                self.__logger.debug(f"Yay! data arrived {data} :)")
                 return data
+            self.__logger.debug(f"waiting for data {for_date}:(")
             time.sleep(sleep_seconds)
 
     def get_candles(self, token: str, interval: int, no_of_candles: int, from_date: datetime) -> List[dict]:

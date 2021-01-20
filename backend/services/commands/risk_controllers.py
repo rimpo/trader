@@ -46,19 +46,18 @@ def simple(tokens: str):
     tokens = [int(token) for token in tokens]
     # Note: quantity should be divisible by 4
     max_buy_quantity =  12
-    flat_stop_loss_percent = 2
+    flat_stop_loss_percent = 1.0
 
     try:
         while True:
             positions = position_service.get_open_position()
             signal = signal_service.get_unprocessed_signal()
             prices = instrument_service.get_ltp(tokens)
+            logger.debug("waiting for signal")
             if signal:
                 # TAKE POSITION SIGNAL
                 position = positions[signal.instrument_token]
-                logger.info(f"Got signal {signal}!!")
-                logger.info(positions)
-                logger.info(prices)
+                logger.info(f"Got Signal: {signal}!!")
                 if position and position['quantity'] != 0:
                     # on valid position
                     if position['quantity'] > 0:
@@ -96,20 +95,17 @@ def simple(tokens: str):
                         continue
                     position = positions[token]
                     ltp = prices[token]
-                    logger.debug(position)
                     avg_price = position['average_price']
                     qty = position['quantity']
                     if qty > 0:
                         if is_ltp_in_loss(ltp, avg_price, flat_stop_loss_percent):
                             # SELL ALL - stop loss hit
                             market_order_service.sell(token, qty)
-
-                        if is_ltp_in_profit(ltp, avg_price, 1.5):
+                        elif is_ltp_in_profit(ltp, avg_price, 0.9):
                             # SELL 25 percent
                             qty_to_close = get_qty_to_close(qty, max_buy_quantity)
                             market_order_service.sell(token, qty_to_close)
-
-                        if is_ltp_in_profit(ltp, avg_price, 2.0):
+                        elif is_ltp_in_profit(ltp, avg_price, 1.5):
                             # SELL another 25 percent
                             qty_to_close = get_qty_to_close(qty, max_buy_quantity)
                             market_order_service.sell(token, qty_to_close)

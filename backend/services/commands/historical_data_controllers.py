@@ -16,22 +16,23 @@ blueprint = Blueprint('historical-data', __name__)
 @blueprint.cli.command("test")
 @click.option('--interval', default=15, type=int)
 @click.argument('tokens', nargs=-1)
-def test(token: List[str], interval: int):
+def test(tokens: List[str], interval: int):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
     historical_data_service = injector.get(HistoricalDataService)
 
-    now_utc = datetime.utcnow()
-    from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 13, 0, 0))
+    # to_date = india.localize(datetime.utcnow())
+    # from_date = to_date - timedelta(days=30)
+    now_utc = india.localize(datetime.utcnow())
+    from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
     to_date = from_date + timedelta(minutes=interval)
-
     logger.info(f"from_date:{from_date} to_date:{to_date}")
-
-    historical_data_service.download_and_save(token, interval, from_date, to_date)
+    for token in tokens:
+        historical_data_service.download_and_save(token, interval, from_date, to_date)
     logger.info("done.")
 
-    data = historical_data_service.get_candle(int(token), interval, from_date)
-    logger.info(data)
+    # data = historical_data_service.get_candle(int(token), interval, from_date)
+    #logger.info(data)
 
 
 @blueprint.cli.command("sync")
@@ -64,7 +65,7 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
                 time.sleep(5)
                 continue
     except Exception as e:
-        logger.error(f"failed sync {e}")
+        logger.exception(f"failed sync {e}")
         telegram_bot.send("historical data sync failed !!")
         pass
 

@@ -21,3 +21,7 @@ TODO All:
 
 19 Jan 2021:
 	- run with less orders for one script
+
+
+20 Jan 2021:
+	- from_Date for historical candles 50 or else replay wont work

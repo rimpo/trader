@@ -62,6 +62,8 @@ class HistoricalDataService(ExternalHistoricalDataService):
             if len(data) > 1:
                 raise Exception("Expecting only 1 record got more than 1 historical data")
             if len(data) == 0:
+                self.__logger.debug(f"waiting for data {date} :(")
                 time.sleep(sleep_seconds)
                 continue
+            self.__logger.debug(f"Yay! data arrived {data} :)")
             return data[0]

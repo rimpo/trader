@@ -12,7 +12,12 @@ class Repository(HistoricalDataRepository):
     def __init__(self, logger: log.Logger):
         self.__logger = logger
 
+    def insert_one(self, token: str, interval: int, data: dict):
+        data['instrument_token'] = token
+        result = db[f"ohlc_{interval}"].replace_one({'instrument_token': token, 'date': data['date']}, data, upsert=True)
+
     def insert(self, token: str, interval: int, data: List[dict]):
+
         # upsert
         for ohlc in data:
             ohlc['instrument_token'] = token

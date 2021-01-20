@@ -6,7 +6,7 @@ from services.strategy.signal import SignalService
 from services.strategy import MacdStrategy
 from lib.telegram_bot import TelegramBot
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 from lib.time import india
 
 blueprint = Blueprint('strategy', __name__)
@@ -39,5 +39,15 @@ def macd(tokens: List[str], interval: int):
         telegram_bot.send(f"strategy failed !! {e}")
 
     logger.info("macd strategy stopped.")
+
+
+@blueprint.cli.command("signal-test")
+@click.option('--token', default=975873)
+def macd(token: str):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    signal_service = injector.get(SignalService)
+    signal_service.save_buy_signal(token, datetime.utcnow())
+
 
 
