@@ -22,6 +22,7 @@ class HistoricalDataService(ExternalHistoricalDataService):
     """
     INTERVAL = {
         # 1: "minute", NOTE: dont want to support 1 minute data
+        3: "3minute",
         5: "5minute",
         10: "10minute",
         15: "15minute",
@@ -50,7 +51,7 @@ class HistoricalDataService(ExternalHistoricalDataService):
 
     def get_historical_data_wait(self, token: int, date: datetime, interval: int, sleep_seconds: int):
         from_date = date
-        to_date = date + timedelta(minutes=interval) # 1 minute data will not work due the granularity is minute here
+        to_date = date + timedelta(minutes=1)  # 1 minute data will not work due the granularity is minute here
         while True:
             data = self.__kite.historical_data(
                 token,
@@ -62,8 +63,6 @@ class HistoricalDataService(ExternalHistoricalDataService):
             if len(data) > 1:
                 raise Exception("Expecting only 1 record got more than 1 historical data")
             if len(data) == 0:
-                self.__logger.debug(f"waiting for data {date} :(")
-                time.sleep(sleep_seconds)
-                continue
-            self.__logger.debug(f"Yay! data arrived {data} :)")
+                raise Exception("Expecting only 1 record got 0. Should not be possible")
+            self.__logger.debug(f"Yay! data arrived:{data} :)")
             return data[0]

@@ -6,6 +6,7 @@ from injector import inject
 from services.historical_data import HistoricalDataRepository
 from datetime import datetime
 import pymongo
+from lib.time import india
 
 class Repository(HistoricalDataRepository):
     @inject
@@ -32,9 +33,11 @@ class Repository(HistoricalDataRepository):
         return None
 
     def get_candles(self, token: str, interval: int, no_of_candles: int, from_date: datetime):
-        cursor_candles = db[f"ohlc_{interval}"].find({"instrument_token": token, }).sort("date", pymongo.DESCENDING).limit(no_of_candles)
+        cursor_candles = db[f"ohlc_{interval}"].find({"instrument_token": token, "date": {"$lte": from_date}}).sort("date", pymongo.DESCENDING).limit(no_of_candles)
         if cursor_candles:
             candles = list(cursor_candles)
             if len(candles) == no_of_candles:
+                for candle in candles:
+                    candle['date'] = candle['date'].astimezone(india)
                 return candles
-        raise Exception(f"Requested number of candles don't exist. token:{token} interval:{interval}min requested:{no_of_candles}")
+        raise Exception(f"Requested number of candles don't exist. token:{token} interval:{interval}min requested:{no_of_candles} from_date:{from_date}")

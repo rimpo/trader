@@ -9,8 +9,27 @@ from services.historical_data.historical_data import HistoricalDataService
 import time
 from typing import List
 from lib.telegram_bot import TelegramBot
+from lib.time import get_today_exchange_start_time, get_today_exchange_end_time, IntervalRange
 
 blueprint = Blueprint('historical-data', __name__)
+
+
+@blueprint.cli.command("test1")
+@click.option('--interval', default=15, type=int)
+@click.argument('tokens', nargs=-1)
+def test(tokens: List[str], interval: int):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    historical_data_service = injector.get(HistoricalDataService)
+
+    to_date = india.localize(datetime.utcnow())
+    now_utc = india.localize(datetime.utcnow())
+
+    from_date = india.localize(datetime(now_utc.year, now_utc.month, 20, 9, 15, 0))
+    logger.info(f"from_date:{from_date} to_date:{to_date}")
+    for token in tokens:
+        historical_data_service.download_and_save(token, interval, from_date, to_date)
+    logger.info("done.")
 
 
 @blueprint.cli.command("test")
@@ -21,24 +40,25 @@ def test(tokens: List[str], interval: int):
     logger = injector.get(log.Logger)
     historical_data_service = injector.get(HistoricalDataService)
 
-    # to_date = india.localize(datetime.utcnow())
+    to_date = india.localize(datetime.utcnow())
     # from_date = to_date - timedelta(days=30)
     now_utc = india.localize(datetime.utcnow())
-    from_date = india.localize(datetime(now_utc.year, now_utc.month, now_utc.day, 9, 15, 0))
-    to_date = from_date + timedelta(minutes=interval)
+    from_date = india.localize(datetime(now_utc.year, now_utc.month, 22, 15, 15, 0))
     logger.info(f"from_date:{from_date} to_date:{to_date}")
-    for token in tokens:
-        historical_data_service.download_and_save(token, interval, from_date, to_date)
-    logger.info("done.")
 
-    # data = historical_data_service.get_candle(int(token), interval, from_date)
-    #logger.info(data)
+    from_date = from_date.replace(day=20)
+
+    data = historical_data_service.get_candle(tokens[0], interval, from_date)
+    logger.info(f"candle:{data}")
+
+    data = historical_data_service.get_candles(tokens[0], interval, 5, from_date)
+    logger.info(data)
 
 
 @blueprint.cli.command("sync")
 @click.option('--interval', default=15)
 @click.option('--sleep-seconds', default=10)
-@click.option('--since', default="3d")
+@click.option('--since', default="5d")
 @click.argument('tokens', nargs=-1)
 def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
     injector = dependencies.create_injector()
@@ -46,8 +66,7 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
     historical_data_service = injector.get(HistoricalDataService)
     telegram_bot = injector.get(TelegramBot)
 
-    # Download historical data from now to some defined time in the past
-    to_date = datetime.utcnow().astimezone(india)
+    to_date = datetime.utcnow().astimezone(india) - timedelta(minutes=interval)
     from_date = to_date - timedelta(seconds=parse(since))
     for token in tokens:
         historical_data_service.download_and_save(token, interval, from_date, to_date)
@@ -56,18 +75,16 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
     try:
         while True:
             curr_time = datetime.utcnow().astimezone(india)
+            curr_time = curr_time.replace(second=0, microsecond=0)
             if curr_time.minute % interval == 0:
-                logger.info(f"token:{token} from_date:{from_date} to_date:{to_date}")
+                for_date = curr_time - timedelta(minutes=interval + 1)  # Note: 1 minute will not work
                 for token in tokens:
-                    historical_data_service.wait_download_and_save(token, curr_time, interval, sleep_seconds)
-            else:
-                logger.info(f"{curr_time.minute} waiting for the time")
-                time.sleep(5)
-                continue
+                    logger.info(f"token:{token}  wait for curr_time:{curr_time} for_date:{for_date}")
+                    historical_data_service.wait_download_and_save(token, for_date, interval, sleep_seconds)
+            time.sleep(10)
     except Exception as e:
         logger.exception(f"failed sync {e}")
         telegram_bot.send("historical data sync failed !!")
-        pass
 
 
 

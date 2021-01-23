@@ -42,6 +42,7 @@ class HistoricalDataService:
 
     def download_and_save(self, token: int, interval: int, from_date: datetime, to_date: datetime):
         data = self.__external_historical_data_service.get_historical_data(token, interval, from_date, to_date)
+        self.__logger.info(data)
         self.__repository.insert(token, interval, data)
 
     def wait_download_and_save(self, token: int, date: datetime, interval: int, sleep_seconds: int = 15):

@@ -59,16 +59,16 @@ class MacdStrategy:
         self.__no_of_candles = 50
 
     def run(self, tokens: List[str], interval: int, start_date: datetime):
-        curr_time = start_date
-        curr_time = datetime.utcnow().astimezone(india)
-        curr_time = curr_time.replace(second=0, microsecond=0)
         while True:
+            curr_time = datetime.utcnow().astimezone(india)
+            curr_time = curr_time.replace(second=0, microsecond=0)
             if curr_time.minute % interval == 0:
+                for_date = curr_time - timedelta(minutes=interval)
                 for token in tokens:
-                    data = self.__historical_data_service.get_candle_wait(token, interval, curr_time)
-                    self.__logger.debug(f"token:{token} {interval}min date:{curr_time} data:{data}. Yay !!")
+                    data = self.__historical_data_service.get_candle_wait(token, interval, for_date)
+                    self.__logger.debug(f"token:{token} {interval}min date:{for_date} data:{data}. Yay !!")
 
-                    candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles, curr_time)
+                    candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles, for_date)
                     candles.reverse()
 
                     crossing, macd_is_above = self.__macd_indicator.calculate(candles)
@@ -79,12 +79,5 @@ class MacdStrategy:
                         else:
                             self.__signal_service.save_sell_signal(token, candles[-1]["date"])
                             self.__logger.debug(f"sell signal for {token}!!")
-            else:
-                curr_time = datetime.utcnow().astimezone(india)
-                curr_time = curr_time.replace(second=0, microsecond=0)
-                self.__logger.debug(f"waiting for correct window {curr_time}!!")
-                time.sleep(5)
-                continue
-            curr_time += timedelta(minutes=interval)
-
-
+            self.__logger.debug(f"waiting for correct window {curr_time}!!")
+            time.sleep(5)
