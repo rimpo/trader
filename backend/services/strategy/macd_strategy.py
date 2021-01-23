@@ -27,7 +27,7 @@ class MacdIndicator:
 
         df = pd.DataFrame.from_dict(candles)
 
-        df['macd'], df['signal'], _ = MACDEXT(
+        """df['macd'], df['signal'], _ = MACDEXT(
             df['close'],
             fastperiod=self.__fast_ema_length,
             fastmatype=1,
@@ -35,7 +35,12 @@ class MacdIndicator:
             slowmatype=1,
             signalperiod=self.__signal_length,
             signalmatype=0
-        )
+        )"""
+
+        df['fast_ema'] = EMA(df['close'].values, timeperiod=self.__fast_ema_length)
+        df['slow_ema'] = EMA(df['close'].values, timeperiod=self.__slow_ema_length)
+        df['macd'] = (df['fast_ema'] - df['slow_ema'])
+        df['signal'] = SMA(df['macd'].values, timeperiod=self.__signal_length)
 
         macd = df['macd'].iloc[-1]
         signal = df['signal'].iloc[-1]
@@ -47,37 +52,50 @@ class MacdIndicator:
         previous_signal = df['signal'].shift(1).iloc[-1]
         crossing = cross(previous_macd, previous_signal, macd, signal)
         self.__logger.debug(f"macd:{macd},{previous_macd} signal:{signal},{previous_signal} crossing:{crossing} macd_is_above:{macd_is_above}")
-        return crossing, macd_is_above
+        # print(df)
+        return crossing, macd_is_above and macd < 0.0
 
 class MacdStrategy:
     @inject
     def __init__(self, logger: log.Logger, historical_data_service: HistoricalDataService, signal_service: SignalService):
         self.__logger = logger
         self.__historical_data_service = historical_data_service
-        self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=5)
+        self.__macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
         self.__signal_service = signal_service
         self.__no_of_candles = 50
 
-    def run(self, tokens: List[str], interval: int, start_date: datetime):
-        while True:
-            curr_time = datetime.utcnow().astimezone(india)
-            curr_time = curr_time.replace(second=0, microsecond=0)
-            if curr_time.minute % interval == 0:
-                for_date = curr_time - timedelta(minutes=interval)
-                for token in tokens:
-                    data = self.__historical_data_service.get_candle_wait(token, interval, for_date)
-                    self.__logger.debug(f"token:{token} {interval}min date:{for_date} data:{data}. Yay !!")
+    def run_for_date_nowait(self, tokens: List[str], interval: int, for_date: datetime):
+        for token in tokens:
+            self.__logger.debug(f"token:{token} {interval}min date:{for_date}  Search !!")
+            data = self.__historical_data_service.get_candle(token, interval, for_date)
+            if data:
+                # self.__logger.debug(f"token:{token} {interval}min date:{for_date} data:{data}. Yay !!")
 
-                    candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles, for_date)
-                    candles.reverse()
+                candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles, for_date)
+                candles.reverse()
 
-                    crossing, macd_is_above = self.__macd_indicator.calculate(candles)
-                    if crossing:
-                        if macd_is_above:
-                            self.__signal_service.save_buy_signal(token, candles[-1]["date"])
-                            self.__logger.debug(f"buy signal for {token}!!")
-                        else:
-                            self.__signal_service.save_sell_signal(token, candles[-1]["date"])
-                            self.__logger.debug(f"sell signal for {token}!!")
-            self.__logger.debug(f"waiting for correct window {curr_time}!!")
-            time.sleep(5)
+                crossing, macd_is_above = self.__macd_indicator.calculate(candles)
+                if crossing:
+                    if macd_is_above:
+                        self.__signal_service.save_buy_signal(token, candles[-1]["date"], candles[-1]["close"])
+                        self.__logger.debug(f"*** buy signal for {token} ***!!")
+                    else:
+                        self.__signal_service.save_sell_signal(token, candles[-1]["date"], candles[-1]["close"])
+                        self.__logger.debug(f"*** sell signal for {token} ***!!")
+
+    def run_for_date(self, tokens: List[str], interval: int, for_date: datetime):
+        for token in tokens:
+            data = self.__historical_data_service.get_candle_wait(token, interval, for_date)
+            self.__logger.debug(f"token:{token} {interval}min date:{for_date} data:{data}. Yay !!")
+
+            candles = self.__historical_data_service.get_candles(token, interval, self.__no_of_candles, for_date)
+            candles.reverse()
+
+            crossing, macd_is_above = self.__macd_indicator.calculate(candles)
+            if crossing:
+                if macd_is_above:
+                    self.__signal_service.save_buy_signal(token, candles[-1]["date"])
+                    self.__logger.debug(f"buy signal for {token}!!")
+                else:
+                    self.__signal_service.save_sell_signal(token, candles[-1]["date"])
+                    self.__logger.debug(f"sell signal for {token}!!")

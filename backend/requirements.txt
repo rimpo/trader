@@ -16,3 +16,4 @@ mongoengine
 flask-mongoengine
 pytimeparse
 pandas
+coverage

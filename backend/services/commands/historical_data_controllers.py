@@ -9,9 +9,29 @@ from services.historical_data.historical_data import HistoricalDataService
 import time
 from typing import List
 from lib.telegram_bot import TelegramBot
-from lib.time import get_today_exchange_start_time, get_today_exchange_end_time, IntervalRange
+from lib.time import TimeRange, IndiaTimeService, NSEExchangeTime, TimeSleepWait, DummyExchangeTime, \
+    DummySleepWait, GermanyTimeService, DummyTimeService, DummySleepWait
 
 blueprint = Blueprint('historical-data', __name__)
+
+@blueprint.cli.command("test-time")
+@click.option('--interval', default=5, type=int)
+@click.argument('tokens', nargs=-1)
+def test(tokens: List[str], interval: int):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    from_date = india.localize(datetime(2021, 1, 22, 9, 10, 0))
+    # time_range = TimeRange(interval=interval, time_service=IndiaTimeService(), exchange_time=NSEExchangeTime, time_wait=TimeSleepWait(seconds=15))
+    time_range = TimeRange(
+        interval=interval,
+        time_service=DummyTimeService(from_date, 1),
+        exchange_time=NSEExchangeTime(),
+        time_wait=DummySleepWait()
+    )
+    for t in time_range.get_next():
+        curr_time = datetime.utcnow().astimezone(india)
+        logger.info(f"curr:{curr_time} got:{t} ")
+
 
 
 @blueprint.cli.command("test1")

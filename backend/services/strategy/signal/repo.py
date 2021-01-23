@@ -2,8 +2,9 @@ from injector import inject
 from services.strategy.signal.signals import SignalRepository, Signal, BUY_SIGNAL, SELL_SIGNAL
 from datetime import datetime
 from lib.mongo_db import db
-from typing import Optional
+from typing import Optional, List
 from lib import log
+import pymongo
 
 
 class Repository(SignalRepository):
@@ -11,12 +12,13 @@ class Repository(SignalRepository):
     def __init__(self, logger: log.Logger):
         self.__logger = logger
 
-    def save_signal(self, token: str, signal_type: str, date: datetime):
+    def save_signal(self, token: str, signal_type: str, date: datetime, close_price: float):
         db["signals"].insert_one({
             "processed": False,
             "signal": signal_type,
             "date": date,
-            "instrument_token": token
+            "instrument_token": token,
+            "close": close_price,
         })
 
     def get_unprocessed_signal(self) -> Optional[Signal]:
@@ -33,3 +35,9 @@ class Repository(SignalRepository):
 
     def set_signal_processed(self, id):
         db["signals"].update_one({"_id": id}, {"$set": {"processed": True}})
+
+    def get_signals(self, token: str) -> List[Signal]:
+        signals = list(db["signals"].find({"instrument_token": token}).sort("date", pymongo.ASCENDING))
+        if len(signals) > 0:
+            return signals
+        return Exception("No Signals!!!")
