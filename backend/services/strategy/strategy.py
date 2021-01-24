@@ -23,6 +23,9 @@ class Strategy:
         self.__max_profit = 0
         self.__max_loss = 0
 
+        self.__profit_list = []
+        self.__loss_list = []
+
     def long_entry(self, price: float, qty: int):
         if self.__long_state:
             # raise Exception(f"already long entered at {self.__long_price} {self.__long_qty}")
@@ -42,10 +45,11 @@ class Strategy:
             self.__total_trade_win += 1
             self.__total_profit += profit
             self.__max_profit = max(self.__total_profit, self.__max_profit)
+            self.__profit_list.append(profit)
         else:
             self.__total_loss += profit
             self.__max_loss = min(self.__total_loss, self.__max_loss)
-        print(f"profit: {profit}")
+            self.__loss_list.append(profit)
         self.__long_state = False
         self.__total_trade += 1
 
@@ -68,16 +72,21 @@ class Strategy:
             self.__total_trade_win += 1
             self.__total_profit += profit
             self.__max_profit = max(self.__total_profit, self.__max_profit)
+            self.__profit_list.append(profit)
         else:
             self.__total_loss += profit
             self.__max_loss = min(self.__total_loss, self.__max_loss)
+            self.__loss_list.append(profit)
+
         self.__short_state = False
         self.__total_trade += 1
 
-
     def show(self):
-        self.__logger.info(f"actual_profit:{self.__total_profit + self.__total_loss} profit:{self.__total_profit} loss:{self.__total_loss} ")
-        self.__logger.info(f"total_trade: {self.__total_trade} total_trade_win: {self.__total_trade_win} win_ratio: {self.__total_trade_win / self.__total_trade}")
-        self.__logger.info(f"profit_factor: {self.__total_profit / ((-1.0)*self.__total_loss)} max_draw_down: {self.__max_profit + self.__max_loss} max_profit:{self.__max_profit} max_loss:{self.__max_loss}")
-
+        avg_profit = float(sum(self.__profit_list)) / float(len(self.__profit_list))
+        avg_loss = float(sum(self.__loss_list)) / float(len(self.__loss_list))
+        self.__logger.info(f"actual_profit:{self.__total_profit + self.__total_loss} profit:{self.__total_profit} loss:{self.__total_loss}")
+        self.__logger.info(f"total_trade: {self.__total_trade} total_trade_win: {self.__total_trade_win} win_ratio:{self.__total_trade_win / self.__total_trade}")
+        self.__logger.info(f"profit_factor: {self.__total_profit / ((-1.0)*self.__total_loss)}")
+        self.__logger.info(f"max_profit:{self.__max_profit} max_loss:{self.__max_loss} avg_profit:{avg_profit} avg_loss:{avg_loss}")
+        self.__logger.info(f"profit:{self.__profit_list} loss:{self.__loss_list}")
 

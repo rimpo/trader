@@ -34,22 +34,21 @@ def test(tokens: List[str], interval: int):
 
 
 
-@blueprint.cli.command("test1")
+@blueprint.cli.command("download")
 @click.option('--interval', default=15, type=int)
+@click.option('--since', default="90d")
 @click.argument('tokens', nargs=-1)
-def test(tokens: List[str], interval: int):
+def download(tokens: List[str], interval: int, since: str):
     injector = dependencies.create_injector()
-    logger = injector.get(log.Logger)
     historical_data_service = injector.get(HistoricalDataService)
+    logger = injector.get(log.Logger)
 
-    to_date = india.localize(datetime.utcnow())
-    now_utc = india.localize(datetime.utcnow())
-
-    from_date = india.localize(datetime(now_utc.year, now_utc.month, 20, 9, 15, 0))
-    logger.info(f"from_date:{from_date} to_date:{to_date}")
+    to_date = datetime.utcnow().astimezone(india)
+    from_date = to_date - timedelta(seconds=parse(since))
     for token in tokens:
         historical_data_service.download_and_save(token, interval, from_date, to_date)
-    logger.info("done.")
+        logger.info(f"download done for {token}")
+        time.sleep(5)
 
 
 @blueprint.cli.command("test")

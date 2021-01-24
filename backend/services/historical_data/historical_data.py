@@ -42,25 +42,24 @@ class HistoricalDataService:
 
     def download_and_save(self, token: int, interval: int, from_date: datetime, to_date: datetime):
         data = self.__external_historical_data_service.get_historical_data(token, interval, from_date, to_date)
-        self.__logger.info(data)
         self.__repository.insert(token, interval, data)
 
     def wait_download_and_save(self, token: int, date: datetime, interval: int, sleep_seconds: int = 15):
         data = self.__external_historical_data_service.get_historical_data_wait(token, date, interval, sleep_seconds)
         self.__repository.insert_one(token, interval, data)
 
-    def get_candle(self, token: int, interval: str, for_date: datetime) -> dict:
+    def get_candle(self, token: int, interval: str, for_date: datetime, with_wait: bool, sleep_seconds: int = 15) -> dict:
         """for_date needs to be in UTC"""
-        return self.__repository.get_candle(token, interval, for_date)
-
-    def get_candle_wait(self, token: int, interval: str, for_date: datetime, sleep_seconds: int = 15) -> dict:
         while True:
             data = self.__repository.get_candle(token, interval, for_date)
             if data is not None:
-                self.__logger.debug(f"Yay! data arrived {data} :)")
                 return data
             self.__logger.debug(f"waiting for data {for_date}:(")
-            time.sleep(sleep_seconds)
+            if with_wait:
+                time.sleep(sleep_seconds)
+            else:
+                break
+        return None
 
     def get_candles(self, token: str, interval: int, no_of_candles: int, from_date: datetime) -> List[dict]:
         return self.__repository.get_candles(token, interval, no_of_candles, from_date)
