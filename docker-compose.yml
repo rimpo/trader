@@ -57,5 +57,19 @@ services:
       - trader-mongo-data:/data/db
     command: --quiet
 
+  zerodha-login-automation:
+    build:
+      context: ./zerodha-login-automation
+      dockerfile: Dockerfile
+    env_file:
+      .env
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./zerodha-login-automation:/app/zerodha-login-automation
+    command: [
+      "python",
+      "/app/zerodha-login-automation/zerodha.py"
+    ]
 volumes:
   trader-mongo-data:

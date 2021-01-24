@@ -1,0 +1,40 @@
+curl 'https://kite.zerodha.com/api/login' \
+  -H 'Connection: keep-alive' \
+  -H 'X-Kite-Version: 2.6.3' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'X-Kite-Userid: FQ9181' \
+  -H 'X-CSRFTOKEN: XWZJySqm2vc3IeXSDoFvdnMRXcx23Xwu' \
+  -H 'sec-ch-ua: "Google Chrome";v="87", " Not;A Brand";v="99", "Chromium";v="87"' \
+  -H 'Origin: https://kite.zerodha.com' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Referer: https://kite.zerodha.com/connect/login?api_key=lkosge0zwm091e0u&sess_id=3T23xqksXQ8gvsXAZfF2FW8dZP26tYbI' \
+  -H 'Accept-Language: en-US,en;q=0.9' \
+  -H 'Cookie: _ga=GA1.2.279411632.1609240022; __cfduid=d1157b7037164151deee3f617c4d828d51609482043; public_token=XWZJySqm2vc3IeXSDoFvdnMRXcx23Xwu; user_id=FQ9181; enctoken=XGOxk8harxC55Y29BjJzyYdB14+iuPnblMz9Oi8vs4Jqms7ed0dzgzvZ38NDqw4vuH31OMEiLhujVKHOgc8ggm5apJD4zA==; kf_session=IQHzL342LkND42Cb1SfhhIORYqhPbjjt' \
+  --data-raw 'user_id=FQ9181&password=Almora%40123' \
+  --compressed
+
+
+curl -L 'https://kite.zerodha.com/api/twofa' \
+  -H 'Connection: keep-alive' \
+  -H 'X-Kite-Version: 2.6.3' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'X-Kite-Userid: FQ9181' \
+  -H 'X-CSRFTOKEN: XWZJySqm2vc3IeXSDoFvdnMRXcx23Xwu' \
+  -H 'sec-ch-ua: "Google Chrome";v="87", " Not;A Brand";v="99", "Chromium";v="87"' \
+  -H 'Origin: https://kite.zerodha.com' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Referer: https://kite.zerodha.com/connect/login?api_key=lkosge0zwm091e0u&sess_id=3T23xqksXQ8gvsXAZfF2FW8dZP26tYbI' \
+  -H 'Accept-Language: en-US,en;q=0.9' \
+  -H 'Cookie: _ga=GA1.2.279411632.1609240022; __cfduid=d1157b7037164151deee3f617c4d828d51609482043; public_token=XWZJySqm2vc3IeXSDoFvdnMRXcx23Xwu; user_id=FQ9181; enctoken=XGOxk8harxC55Y29BjJzyYdB14+iuPnblMz9Oi8vs4Jqms7ed0dzgzvZ38NDqw4vuH31OMEiLhujVKHOgc8ggm5apJD4zA==; kf_session=IQHzL342LkND42Cb1SfhhIORYqhPbjjt' \
+  --data-raw 'user_id=FQ9181&request_id=ObI0dRvyNBJa1kSk001F9rO866KSfuUN5o0lTBdXn8X2cfx5fr402sx7ervSMtV3&twofa_value=830907' \
+  --compressed

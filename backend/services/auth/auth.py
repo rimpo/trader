@@ -15,6 +15,7 @@ class AuthRepository(Protocol):
 class AuthService:
     @inject
     def __init__(self, logger: log.Logger, kite: KiteConnect, api_secret: str, auth_repo: AuthRepository):
+        self.__logger = logger
         self.__api_secret = api_secret
         self.__kite = kite
         self.__auth_repo = auth_repo
@@ -28,6 +29,7 @@ class AuthService:
     def generate_access_token(self, request_token: str):
         # TODO: renew access token logic
         data = self.__kite.generate_session(request_token, self.__api_secret)
+        self.__logger.info(f"data:{data}")
         self.__access_token = data["access_token"]
         self.__auth_repo.create_auth(request_token, self.__access_token)
 
@@ -36,3 +38,8 @@ class AuthService:
 
     def get_kite(self):
         return self.__kite
+
+    def renew_access_token(self):
+        data = self.__kite.renew_access_token('', self.__api_secret)
+        self.__logger.info(f"{data}")
+

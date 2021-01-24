@@ -53,7 +53,7 @@ class MacdIndicator:
         crossing = cross(previous_macd, previous_signal, macd, signal)
         self.__logger.debug(f"macd:{macd},{previous_macd} signal:{signal},{previous_signal} crossing:{crossing} macd_is_above:{macd_is_above}")
         # print(df)
-        return crossing, macd_is_above and macd < 0.0
+        return crossing, macd_is_above and macd < -0.8
 
 class MacdStrategy:
     @inject
