@@ -45,7 +45,7 @@ def simple(tokens: str):
 
     tokens = [int(token) for token in tokens]
     # Note: quantity should be divisible by 4
-    max_buy_quantity =  12
+    max_buy_quantity = 12
     flat_stop_loss_percent = 1.5
 
     try:

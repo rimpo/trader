@@ -91,15 +91,13 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
         historical_data_service.download_and_save(token, interval, from_date, to_date)
 
     # NOTE: THIS ONLY WORKS FOR INTERVAL WITHIN ONE HOUR
+    time_range = TimeRange(interval=interval, time_service=IndiaTimeService(), exchange_time=NSEExchangeTime(),
+                           time_wait=TimeSleepWait(seconds=15))
     try:
-        while True:
-            curr_time = datetime.utcnow().astimezone(india)
-            curr_time = curr_time.replace(second=0, microsecond=0)
-            if curr_time.minute % interval == 0:
-                for_date = curr_time - timedelta(minutes=interval + 1)  # Note: 1 minute will not work
-                for token in tokens:
-                    logger.info(f"token:{token}  wait for curr_time:{curr_time} for_date:{for_date}")
-                    historical_data_service.wait_download_and_save(token, for_date, interval, sleep_seconds)
+        for for_date in time_range.get_next():
+            for token in tokens:
+                logger.info(f"token:{token}  waiting for_date:{for_date}")
+                historical_data_service.wait_download_and_save(token, for_date, interval, sleep_seconds)
             time.sleep(10)
     except Exception as e:
         logger.exception(f"failed sync {e}")
