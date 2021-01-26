@@ -77,8 +77,6 @@ def run_app():
         # Reconnection will not happen after executing `ws.stop()`
         ws.stop()
 
-    logger.info(f"token:{auth_service.get_access_token()}")
-
     kws = KiteTicker(api_key=env.KITE_API_KEY, access_token=auth_service.get_access_token())
 
 

@@ -16,5 +16,4 @@ class InstrumentService(ExternalInstrumentService):
         return self.__kite.instruments(exchange=self.__kite.EXCHANGE_NSE)
 
     def get_ltp(self, symbols: List[str]):
-        # TODO test this api
         return self.__kite.ltp([f"{self.__kite.EXCHANGE_NSE}:{symbol}" for symbol in symbols])
