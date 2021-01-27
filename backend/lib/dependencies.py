@@ -53,7 +53,7 @@ class Container(Module):
         return external.kite.AccessTokenService(logger, kite)
 
     @provider
-    @singleton_scope
+    @noscope
     def provide_auth_service(self, logger: log.Logger, kite: KiteConnect, auth_repo: auth.AuthRepository) -> auth.AuthService:
         return auth.AuthService(
             logger,

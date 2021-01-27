@@ -48,6 +48,9 @@ class ExchangeTime(Protocol):
     def get_end_time(self):
         pass
 
+    def is_exchange_open(self):
+        pass
+
 
 class NSEExchangeTime(ExchangeTime):
     def get_start_time(self):
@@ -56,6 +59,10 @@ class NSEExchangeTime(ExchangeTime):
     def get_end_time(self):
         return datetime.utcnow().astimezone(india).replace(hour=15, minute=30, second=0, microsecond=0).time()
 
+    def is_exchange_open(self):
+        # TODO: Add holiday calendar of NSE
+        return datetime.utcnow().astimezone(india).weekday()
+
 
 class DummyExchangeTime(ExchangeTime):
     def get_start_time(self):
@@ -63,6 +70,9 @@ class DummyExchangeTime(ExchangeTime):
 
     def get_end_time(self):
         return datetime.utcnow().astimezone(germany).replace(hour=15, minute=30, second=0, microsecond=0).time()
+
+    def is_exchange_open(self):
+        return True
 
 
 class TimeWait(Protocol):
@@ -105,7 +115,7 @@ class TimeRange:
         while True:
             curr_time = self.__time_service.get_current_time()
             curr_time = curr_time.replace(second=0, microsecond=0)
-            if curr_time.minute in self.VALID_INTERVAL[self.__interval]:
+            if self.__exchange_time.is_exchange_open() and curr_time.minute in self.VALID_INTERVAL[self.__interval]:
                 actual_time = curr_time - timedelta(minutes=self.__interval)
                 if previous_time and previous_time == actual_time:
                     # to avoid multiple time in same minute
