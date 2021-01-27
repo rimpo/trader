@@ -84,6 +84,7 @@ def sync(tokens: List[str], interval: int, sleep_seconds: int, since: str):
     logger = injector.get(log.Logger)
     historical_data_service = injector.get(HistoricalDataService)
     telegram_bot = injector.get(TelegramBot)
+    logger.info("startin command")
 
     to_date = datetime.utcnow().astimezone(india) - timedelta(minutes=interval)
     from_date = to_date - timedelta(seconds=parse(since))

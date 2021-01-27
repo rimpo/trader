@@ -14,6 +14,9 @@ from lib.mongo_db import  db
 from typing import List
 import pytz
 from services.strategy.signal import SignalService
+from lib.time import TimeRange, IndiaTimeService, NSEExchangeTime, TimeSleepWait, DummyExchangeTime, \
+    DummySleepWait, GermanyTimeService, DummyTimeService, DummySleepWait
+from pytimeparse import parse
 
 class MacdIndicator:
     @inject
@@ -79,3 +82,39 @@ class MacdStrategy:
                     else:
                         self.__signal_service.save_sell_signal(token, candles[-1]["date"], candles[-1]["close"])
                         self.__logger.debug(f"sell signal for {token}!!")
+
+    def run(self, tokens: List[str], interval: int, sleep_seconds: int, since: str):
+
+        to_date = datetime.utcnow().astimezone(india) - timedelta(minutes=interval)
+        from_date = to_date - timedelta(seconds=parse(since))
+
+        for token in tokens:
+            self.__historical_data_service.download_and_save(token, interval, from_date, to_date)
+
+        # NOTE: THIS ONLY WORKS FOR INTERVAL WITHIN ONE HOUR
+        time_range = TimeRange(interval=interval, time_service=IndiaTimeService(), exchange_time=NSEExchangeTime(),
+                               time_wait=TimeSleepWait(seconds=15))
+
+        for for_date in time_range.get_next():
+            for token in tokens:
+                self.__historical_data_service.wait_download_and_save(token, for_date, interval, sleep_seconds)
+
+                data = self.__historical_data_service.get_candle(token, interval, for_date, with_wait=True)
+                if data:
+                    self.__logger.debug(f"token:{token} found data for date:{for_date}!!")
+
+                    candles = self.__historical_data_service.get_candles(
+                        token, interval,
+                        self.__no_of_candles, for_date
+                    )
+                    candles.reverse()
+
+                    crossing, macd_is_above = self.__macd_indicator.calculate(candles)
+                    if crossing:
+                        if macd_is_above:
+                            self.__signal_service.save_buy_signal(token, candles[-1]["date"], candles[-1]["close"])
+                            self.__logger.debug(f"buy signal for {token}!!")
+                        else:
+                            self.__signal_service.save_sell_signal(token, candles[-1]["date"], candles[-1]["close"])
+                            self.__logger.debug(f"sell signal for {token}!!")
+                time.sleep(0.2)

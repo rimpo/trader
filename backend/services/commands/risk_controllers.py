@@ -10,6 +10,10 @@ from services.instruments import InstrumentService
 from services.strategy.signal import SignalService
 from lib.config import env
 from lib.telegram_bot import TelegramBot
+from datetime import time as dttime, datetime
+from lib.time import india
+from lib.time import TimeRange, IndiaTimeService, NSEExchangeTime, TimeSleepWait, DummyExchangeTime, \
+    DummySleepWait, GermanyTimeService, DummyTimeService, DummySleepWait, ExchangeClosedToday, WaitForExchangeOpenTime
 
 blueprint = Blueprint('risk', __name__)
 
@@ -37,11 +41,17 @@ def get_qty_to_close(qty, max_buy_quantity):
 def simple(tokens: str):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
+
+    wait_for_exchange = WaitForExchangeOpenTime(logger, NSEExchangeTime())
+    wait_for_exchange.wait_till(dttime(hour=8, minute=50))
+
     position_service = injector.get(PositionService)
     instrument_service = injector.get(InstrumentService)
     signal_service = injector.get(SignalService)
     telegram_bot = injector.get(TelegramBot)
     market_order_service = injector.get(MISMarketOrderService)
+
+    telegram_bot.send(f"Starting simple risk for tokens:{tokens}")
 
     tokens = [int(token) for token in tokens]
     # Note: quantity should be divisible by 4
@@ -50,6 +60,9 @@ def simple(tokens: str):
 
     try:
         while True:
+            if datetime.utcnow().astimezone(india).time() > dttime(16, 15):
+                logger.info("reached time limit. stopping.")
+                break
             positions = position_service.get_open_position()
             signal = signal_service.get_unprocessed_signal()
             prices = instrument_service.get_ltp(tokens)
@@ -119,5 +132,6 @@ def simple(tokens: str):
     except Exception as e:
         logger.exception("risk controller stopped.")
         telegram_bot.send(f"risk failed !! {e}")
+    telegram_bot.send(f"risk stopped.")
 
 
