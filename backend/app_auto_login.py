@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-# from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 import chromedriver_binary
 import json
 import pdb
@@ -30,7 +30,7 @@ class ZerodhaSelenium(object):
         op.add_argument('--headless')
         op.add_argument('--no-sandbox')
         # op.add_argument('headless')
-        self.driver = webdriver.Chrome(options=op)
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=op)
 
     def getCssElement(self, cssSelector):
         '''

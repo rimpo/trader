@@ -13,6 +13,8 @@ TODO All:
 	- services is getting too many folders need to make it intuitive
 
 
+
+
 18 Jan 2021:
 	- test ltp ...done
 	- test historical data download ...done
@@ -26,3 +28,8 @@ TODO All:
 20 Jan 2021:
 	- from_Date for historical candles 50 or else replay wont work
 	- precommit hook mypy
+
+
+
+- Installation
+- install latest google-chrome first
