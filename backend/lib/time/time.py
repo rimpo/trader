@@ -66,7 +66,7 @@ class WaitForExchangeOpenTime:
             if not self.__exchange_time.is_exchange_open():
                 self.__logger.info("exchange is closed today!. sleeping for 1 hour")
                 time.sleep(3600)
-            if datetime.utcnow().astimezone(india).time() > till:
+            if self.__exchange_time.get_end_time() > datetime.utcnow().astimezone(india).time() > till:
                 self.__logger.info("time to start working!!")
                 break
             self.__logger.info(f"waiting to start curr:{datetime.utcnow().astimezone(india).time()} till:{till}!!")
@@ -83,3 +83,4 @@ class WaitForExchangeOpenTime:
                 continue
             break
         pass
+
