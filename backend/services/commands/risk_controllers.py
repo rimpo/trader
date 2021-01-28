@@ -38,8 +38,8 @@ def get_qty_to_close(qty, max_buy_quantity):
 def simple(tokens: str):
     injector = dependencies.create_injector()
     logger = injector.get(log.Logger)
-
-    wait_for_exchange = WaitForExchangeOpenTime(logger, NSEExchangeTime())
+    nse_exchange_time = NSEExchangeTime()
+    wait_for_exchange = WaitForExchangeOpenTime(logger, nse_exchange_time)
     wait_for_exchange.wait_till(dttime(hour=8, minute=50))
 
     position_service = injector.get(PositionService)
@@ -57,7 +57,7 @@ def simple(tokens: str):
 
     try:
         while True:
-            if datetime.utcnow().astimezone(india).time() > dttime(15, 30):
+            if datetime.utcnow().astimezone(india).time() > nse_exchange_time.get_end_time():
                 logger.info("reached time limit. stopping.")
                 break
             positions = position_service.get_open_position()
