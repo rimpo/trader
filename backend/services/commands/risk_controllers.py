@@ -104,7 +104,7 @@ def simple(tokens: str):
 
                 for token in tokens:
                     if token not in positions:
-                        logger.debug("no position is open !")
+                        logger.debug(f"token:{token} no position is open !")
                         continue
                     position = positions[token]
                     ltp = prices[token]
