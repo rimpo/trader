@@ -6,13 +6,11 @@ from services.strategy.signal import SignalService, BUY_SIGNAL, SELL_SIGNAL
 from services.strategy import MacdStrategy, Strategy
 from lib.telegram_bot import TelegramBot
 from typing import List
-from datetime import datetime, timedelta, time as dttime
+from datetime import datetime, time as dttime
 from lib.time import india
-from services.historical_data.historical_data import HistoricalDataService
 import time
 
-from lib.time import TimeRange, IndiaTimeService, NSEExchangeTime, TimeSleepWait, DummyExchangeTime, \
-    DummySleepWait, GermanyTimeService, DummyTimeService, DummySleepWait, ExchangeClosedToday, WaitForExchangeOpenTime
+from lib.time import TimeRange, NSEExchangeTime, DummyTimeService, DummySleepWait, ExchangeClosedToday, WaitForExchangeOpenTime
 
 blueprint = Blueprint('strategy', __name__)
 

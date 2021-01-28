@@ -2,18 +2,15 @@ import click
 from lib import dependencies
 from lib import log
 from flask import Blueprint
-from services.strategy import MacdStrategy
-from lib.mongo_db import db
 import time
-from services.order import PositionService, MarketOrderServiceCNC, MISMarketOrderService
+from services.order import PositionService, MarketOrderServiceCNC
 from services.instruments import InstrumentService
 from services.strategy.signal import SignalService
 from lib.config import env
 from lib.telegram_bot import TelegramBot
 from datetime import time as dttime, datetime
 from lib.time import india
-from lib.time import TimeRange, IndiaTimeService, NSEExchangeTime, TimeSleepWait, DummyExchangeTime, \
-    DummySleepWait, GermanyTimeService, DummyTimeService, DummySleepWait, ExchangeClosedToday, WaitForExchangeOpenTime
+from lib.time import NSEExchangeTime, WaitForExchangeOpenTime
 
 blueprint = Blueprint('risk', __name__)
 
@@ -60,7 +57,7 @@ def simple(tokens: str):
 
     try:
         while True:
-            if datetime.utcnow().astimezone(india).time() > dttime(16, 15):
+            if datetime.utcnow().astimezone(india).time() > dttime(15, 30):
                 logger.info("reached time limit. stopping.")
                 break
             positions = position_service.get_open_position()
