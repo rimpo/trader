@@ -88,3 +88,4 @@ if __name__ == "__main__":
     obj.doLogin()
 
     telegram_bot.send("login completed successfully")
+    wait_for_exchange.wait_till_nextday()

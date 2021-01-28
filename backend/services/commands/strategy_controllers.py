@@ -104,6 +104,7 @@ def macd(tokens: List[str], interval: int, sleep_seconds: int, since: str):
     except ExchangeClosedToday as e:
         telegram_bot.send(f"market is closed message:{e.message}!!")
     except Exception as e:
+        logger.exception("strategy failed")
         telegram_bot.send(f"strategy failed !! {e}")
     logger.info("macd strategy stopped.")
 

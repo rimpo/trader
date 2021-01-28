@@ -176,3 +176,15 @@ class WaitForExchangeOpenTime:
                 break
             self.__logger.info(f"waiting to start curr:{datetime.utcnow().astimezone(india).time()} till:{till}!!")
             time.sleep(60)
+
+    def wait_till_nextday(self):
+        today = datetime.utcnow().astimezone(india)
+        next_day = today + timedelta(days=1)
+        while True:
+            if datetime.utcnow().astimezone(india).date() < next_day.date():
+                self.__logger.info(
+                    f"waiting to next day. curr:{datetime.utcnow().astimezone(india).date()} next_day:{next_day.date()}!!")
+                time.sleep(3600)
+                continue
+            break
+        pass
