@@ -49,7 +49,7 @@ def simple(tokens: str):
     instrument_service = injector.get(InstrumentService)
     signal_service = injector.get(SignalService)
     telegram_bot = injector.get(TelegramBot)
-    market_order_service = injector.get(MISMarketOrderService)
+    market_order_service = injector.get(MarketOrderServiceCNC)
 
     telegram_bot.send(f"Starting simple risk for tokens:{tokens}")
 
