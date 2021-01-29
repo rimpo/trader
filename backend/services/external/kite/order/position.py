@@ -24,6 +24,7 @@ class PositionService(ExternalPositionService):
             raise Exception(f'position incorrect. filled_quantity != quantity {position}')
 
     def get_open_position(self) -> Dict[int, dict]:
+        # NOTE ONLY WORKS FOR BUY POSITION
         """
         return { 975873: {'tradingsymbol': 'ZEEL', 'exchange': 'NSE', 'instrument_token': 975873, 'product': 'CNC',
          'quantity': 0, 'overnight_quantity': 0, 'multiplier': 1, 'average_price': 0, 'close_price': 0,
@@ -36,5 +37,9 @@ class PositionService(ExternalPositionService):
         positions = self.__kite.positions()
         open_position = defaultdict(dict)
         for position in positions['net']:
-            open_position[position['instrument_token']] = position
+            pos = open_position[position['instrument_token']]
+            pos['quantity'] = position['quantity'] + (pos['quantity'] if 'quantity' in pos else 0)
+            pos['total_value'] = position['average_price'] * position['quantity'] + (pos['total_value'] if 'total_value' in pos else 0)
+            pos['average_price'] = pos['total_value'] / pos['quantity']
+            open_position[position['instrument_token']] = pos
         return open_position
