@@ -29,5 +29,5 @@ class PositionHoldingService:
             self.__logger.info(f"pos_hold:{position}")
             total_value = position['total_value'] + (open_position_holding[instrument_token]["total_value"] if "total_value" in open_position_holding[instrument_token] else 0)
             open_position_holding[instrument_token]["quantity"] = position["quantity"] + (open_position_holding[instrument_token]["quantity"] if "quantity" in open_position_holding[instrument_token] else 0)
-            open_position_holding[instrument_token]["average_price"] = total_value/ open_position_holding[instrument_token]["quantity"]
+            open_position_holding[instrument_token]["average_price"] = (total_value/ open_position_holding[instrument_token]["quantity"]) if open_position_holding[instrument_token]["quantity"] > 0 else 0
         return open_position_holding

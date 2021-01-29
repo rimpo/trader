@@ -40,6 +40,6 @@ class PositionService(ExternalPositionService):
             pos = open_position[position['instrument_token']]
             pos['quantity'] = position['quantity'] + (pos['quantity'] if 'quantity' in pos else 0)
             pos['total_value'] = position['average_price'] * position['quantity'] + (pos['total_value'] if 'total_value' in pos else 0)
-            pos['average_price'] = pos['total_value'] / pos['quantity']
+            pos['average_price'] = (pos['total_value'] / pos['quantity']) if pos['quantity'] > 0 else 0
             open_position[position['instrument_token']] = pos
         return open_position
