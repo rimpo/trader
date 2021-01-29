@@ -79,7 +79,7 @@ def run_app():
 
     kws = KiteTicker(api_key=env.KITE_API_KEY, access_token=auth_service.get_access_token())
 
-
+    logger.info(f"token:{auth_service.get_access_token()}")
     # Assign the callbacks.
     kws.on_ticks = on_ticks
     kws.on_connect = on_connect
