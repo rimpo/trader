@@ -65,11 +65,12 @@ def simple(tokens: str):
             positions = position_holding_service.get_open_position_holding()
             signal = signal_service.get_unprocessed_signal()
             prices = instrument_service.get_ltp(tokens)
-            logger.debug("waiting for signal")
+            logger.info(f"current positions:{positions}")
+            logger.info(f"current ltp:{prices}")
             if signal:
                 # TAKE POSITION SIGNAL
                 position = positions[signal.instrument_token]
-                logger.info(f"Got Signal: {signal}!!")
+                logger.info(f"got Signal: {signal}!!")
                 if position and position['quantity'] != 0:
                     # on valid position
                     if position['quantity'] > 0:
