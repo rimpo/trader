@@ -4,6 +4,7 @@ from lib import dependencies
 from lib import log
 from services.external.kite.order import MarketOrderService
 from services.order.position import PositionService
+from services.order import HoldingService
 
 from flask import Blueprint
 
@@ -32,5 +33,13 @@ def open_position():
 
     positions = position_service.get_open_position()
     logger.info(positions)
+
+@blueprint.cli.command("open-holding")
+def holding_test():
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    holding_service = injector.get(HoldingService)
+    holdings = holding_service.get_open_holding()
+    logger.info(f"holdings:{holdings}")
 
 

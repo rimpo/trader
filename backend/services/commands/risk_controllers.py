@@ -3,7 +3,7 @@ from lib import dependencies
 from lib import log
 from flask import Blueprint
 import time
-from services.order import PositionService, MarketOrderServiceCNC
+from services.order import PositionHoldingService, MarketOrderServiceCNC
 from services.instruments import InstrumentService
 from services.strategy.signal import SignalService
 from lib.config import env
@@ -13,6 +13,8 @@ from lib.time import india
 from lib.time import NSEExchangeTime, WaitForExchangeOpenTime
 
 blueprint = Blueprint('risk', __name__)
+
+
 
 
 def is_ltp_in_loss(ltp: float, avg_price: float, percent: float) -> bool:
@@ -42,7 +44,7 @@ def simple(tokens: str):
     wait_for_exchange = WaitForExchangeOpenTime(logger, nse_exchange_time)
     wait_for_exchange.wait_till(dttime(hour=8, minute=50))
 
-    position_service = injector.get(PositionService)
+    position_holding_service = injector.get(PositionHoldingService)
     instrument_service = injector.get(InstrumentService)
     signal_service = injector.get(SignalService)
     telegram_bot = injector.get(TelegramBot)
@@ -60,7 +62,7 @@ def simple(tokens: str):
             if datetime.utcnow().astimezone(india).time() > nse_exchange_time.get_end_time():
                 logger.info("reached time limit. stopping.")
                 break
-            positions = position_service.get_open_position()
+            positions = position_holding_service.get_open_position_holding()
             signal = signal_service.get_unprocessed_signal()
             prices = instrument_service.get_ltp(tokens)
             logger.debug("waiting for signal")

@@ -26,6 +26,9 @@ def configure(binder: Binder):
     binder.bind(order.ExternalPositionService, external.kite.order.PositionService)
     binder.bind(order.PositionService, order.PositionService)
 
+    binder.bind(order.ExternalHoldingService, external.kite.order.HoldingService)
+    binder.bind(order.HoldingService, order.HoldingService)
+
     binder.bind(order.ExternalMarketOrderServiceCNC, external.kite.order.MarketOrderService)
     binder.bind(order.MarketOrderServiceCNC, order.MarketOrderServiceCNC)
 
