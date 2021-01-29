@@ -40,7 +40,7 @@ class TimeRange:
             if not self.__exchange_time.is_exchange_open():
                 raise ExchangeClosedToday(message=f"{curr_time.date()} exchange closed today wholeday")
 
-            if curr_time.time() > self.__exchange_time.get_end_time() + timedelta(minutes=45):
+            if curr_time.time() > (datetime.combine(date(1,1,1), self.__exchange_time.get_end_time()) + timedelta(minutes=45)).time():
                 raise ExchangeClosedToday(message=f"{curr_time.date()} exchange is closed now.")
 
             if curr_time.minute in self.VALID_INTERVAL[self.__interval]:
