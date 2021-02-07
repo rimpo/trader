@@ -106,6 +106,33 @@ def macd(tokens: List[str], interval: int, sleep_seconds: int, since: str):
         telegram_bot.send(f"strategy failed !! {e}")
     logger.info("macd strategy stopped.")
 
+
+@blueprint.cli.command("macd")
+@click.argument('tokens', nargs=-1)
+@click.option('--interval', default=15)
+@click.option('--sleep-seconds', default=10)
+@click.option('--since', default="5d")
+def macd(tokens: List[str], interval: int, sleep_seconds: int, since: str):
+    injector = dependencies.create_injector()
+    logger = injector.get(log.Logger)
+    wait_for_exchange = WaitForExchangeOpenTime(logger, NSEExchangeTime())
+    wait_for_exchange.wait_till(dttime(hour=8, minute=45))
+
+    macd_strategy = injector.get(MacdStrategy)
+    telegram_bot = injector.get(TelegramBot)
+
+    logger.info(f"macd strategy starting for token {tokens}.")
+
+    try:
+        macd_strategy.run(tokens, interval, sleep_seconds, since)
+    except ExchangeClosedToday as e:
+        telegram_bot.send(f"market is closed message:{e.message}!!")
+    except Exception as e:
+        logger.exception("strategy failed")
+        telegram_bot.send(f"strategy failed !! {e}")
+    logger.info("macd strategy stopped.")
+
+
 @blueprint.cli.command("test-strategy")
 def test_strategy():
     injector = dependencies.create_injector()

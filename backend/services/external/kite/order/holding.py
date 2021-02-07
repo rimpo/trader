@@ -25,6 +25,7 @@ class HoldingService(ExternalHoldingService):
 
     def get_open_holding(self) -> Dict[int, dict]:
         holdings = self.__kite.holdings()
+        self.__logger.info(holdings)
         open_holding = defaultdict(dict)
         for holding in holdings:
             open_holding[holding['instrument_token']] = holding

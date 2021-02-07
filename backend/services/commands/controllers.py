@@ -58,10 +58,7 @@ def macd_strategy(token: str):
 
     period = "15minute"
     token = int(token)
-    fast_ema_length = 12
-    slow_ema_length = 26
-    signal_length = 9
-
+ 
     strategy = Strategy(logger)
     macd_indicator = MacdIndicator(logger, fast_ema_length=12, slow_ema_length=26, signal_length=9)
 
