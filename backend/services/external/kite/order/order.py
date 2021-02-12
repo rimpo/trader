@@ -10,50 +10,50 @@ class MarketOrderService(ExternalMarketOrderServiceCNC, ExternalMISMarketOrderSe
         self.__logger = logger
         self.__kite = auth.get_kite()
 
-    def buy_cnc(self, symbol: str, qty: int):
-        self.__logger.warning(f"***** BUY CNC MARKET ORDER for symbol:{symbol} qty:{qty} *****")
+    def buy_cnc(self, exchange: str, symbol: str, qty: int):
         self.__kite.place_order(
             self.__kite.VARIETY_REGULAR,
-            self.__kite.EXCHANGE_NSE,
+            exchange,
             symbol,
             transaction_type=self.__kite.TRANSACTION_TYPE_BUY,
             quantity=qty,
             product=self.__kite.PRODUCT_CNC,
             order_type=self.__kite.ORDER_TYPE_MARKET
         )
+        self.__logger.warning(f"***** BUY CNC MARKET ORDER for exchange:{exchange} symbol:{symbol} qty:{qty} *****")
 
-    def sell_cnc(self, symbol: str, qty: int):
-        self.__logger.warning(f"***** SELL CNC MARKET ORDER for symbol:{symbol} qty:{qty} *****")
+    def sell_cnc(self, exchange: str, symbol: str, qty: int):
         self.__kite.place_order(
             self.__kite.VARIETY_REGULAR,
-            self.__kite.EXCHANGE_NSE,
+            exchange,
             symbol,
             transaction_type=self.__kite.TRANSACTION_TYPE_SELL,
             quantity=qty,
             product=self.__kite.PRODUCT_CNC,
             order_type=self.__kite.ORDER_TYPE_MARKET
         )
+        self.__logger.warning(f"***** SELL CNC MARKET ORDER for exchange:{exchange} symbol:{symbol} qty:{qty} *****")
 
-    def buy_mis(self, symbol: str, qty: int):
-        self.__logger.warning(f"***** BUY MIS MARKET ORDER for symbol:{symbol} qty:{qty} *****")
-        self.__kite.place_order(
+    def buy_mis(self, exchange: str, symbol: str, qty: int):
+        order = self.__kite.place_order(
             self.__kite.VARIETY_REGULAR,
-            self.__kite.EXCHANGE_NSE,
+            exchange,
             symbol,
             transaction_type=self.__kite.TRANSACTION_TYPE_BUY,
             quantity=int(qty),
             product=self.__kite.PRODUCT_MIS,
             order_type=self.__kite.ORDER_TYPE_MARKET
         )
+        self.__logger.warning(f"***** BUY MIS MARKET ORDER for exchange:{exchange} symbol:{symbol} qty:{qty} order:{order}*****")
 
-    def sell_mis(self, symbol: str, qty: int):
-        self.__logger.warning(f"***** SELL MIS MARKET ORDER for symbol:{symbol} qty:{qty} *****")
-        self.__kite.place_order(
+    def sell_mis(self, exchange: str, symbol: str, qty: int):
+        order = self.__kite.place_order(
             self.__kite.VARIETY_REGULAR,
-            self.__kite.EXCHANGE_NSE,
+            exchange,
             symbol,
             transaction_type=self.__kite.TRANSACTION_TYPE_SELL,
             quantity=int(qty),
             product=self.__kite.PRODUCT_MIS,
             order_type=self.__kite.ORDER_TYPE_MARKET
         )
+        self.__logger.warning(f"***** SELL MIS MARKET ORDER for exchange:{exchange} symbol:{symbol} qty:{qty} order:{order}*****")

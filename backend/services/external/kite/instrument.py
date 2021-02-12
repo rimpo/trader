@@ -17,3 +17,6 @@ class InstrumentService(ExternalInstrumentService):
 
     def get_ltp(self, symbols: List[str]):
         return self.__kite.ltp([f"{self.__kite.EXCHANGE_NSE}:{symbol}" for symbol in symbols])
+
+    def get_symbol_ltp(self, exchange: str, symbols: List[str]):
+        return self.__kite.ltp([f"{exchange}:{symbol}" for symbol in symbols])

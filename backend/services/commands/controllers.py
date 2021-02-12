@@ -21,11 +21,6 @@ def recreate_db():
     logger.warning(f'{env.DB_USER} permission granted:.')
 
 
-
-
-
-
-
 @blueprint.cli.command("position")
 def position():
     injector = dependencies.create_injector()
