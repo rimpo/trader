@@ -1,5 +1,29 @@
-export API_KEY=blahblah
-export API_SECRET=blahblah
-export ACCESS_TOKEN=blahblah
-export REQUEST_TOKEN=blahblah
-export EXCHANGE=NSE
+
+export TRADER_RIMPO_ENV=development
+export KITE_API_KEY=
+export KITE_API_SECRET=
+export KITE_REQUEST_TOKEN=
+export KITE_ACCESS_TOKEN=
+export TRADER_RIMPO_BOT_ACCESS_TOKEN=
+export PYTHONDONTWRITEBYTECODE=1
+
+#export DB_HOST=mongo-db
+export DB_HOST=localhost
+export DB_PORT=27017
+export DB_NAME=trader
+export DB_USER=rimpo
+export DB_PASSWORD=
+
+export DB_ADMIN_USER=admin
+export DB_ADMIN_PASSWORD=""
+
+export MONGO_INITDB_ROOT_USERNAME=${DB_ADMIN_NAME}
+export MONGO_INITDB_ROOT_PASSWORD=${DB_ADMIN_PASSWORD}
+export MONGO_INITDB_DATABASE=${DB_NAME}
+
+export LOG_LEVEL=debug
+
+export KITE_USERNAME=
+export KITE_PASSWORD=
+export KITE_PIN=
+
