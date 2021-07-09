@@ -11,7 +11,8 @@ KITE_API_KEY = os.environ["KITE_API_KEY"]
 KITE_API_SECRET = os.environ["KITE_API_SECRET"]
 
 # KITE_REQUEST_TOKEN = os.environ["KITE_REQUEST_TOKEN"]
-# KITE_ACCESS_TOKEN = os.environ["KITE_ACCESS_TOKEN"]
+KITE_ACCESS_TOKEN = os.environ["KITE_ACCESS_TOKEN"]
+
 DB_HOST = os.environ["DB_HOST"]
 DB_PORT = os.environ["DB_PORT"]
 DB_NAME = os.environ["DB_NAME"]

@@ -12,6 +12,11 @@ class AuthRepository(Protocol):
         pass
 
 
+class AuthServiceBase(Protocol):
+    def get_kite(self):
+        pass
+
+
 class AuthService:
     @inject
     def __init__(self, logger: log.Logger, kite: KiteConnect, api_secret: str, auth_repo: AuthRepository):

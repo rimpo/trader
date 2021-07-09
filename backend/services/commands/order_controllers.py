@@ -3,10 +3,10 @@ import click
 from lib import dependencies
 from lib import log
 from services.external.kite import LTPService
-from services.order.order import MISMarketOrderService
 from services.order.position import PositionService
 from services.order import HoldingService
 from services.instruments import InstrumentService
+from services.order.order import MISMarketOrderService
 
 from flask import Blueprint
 
@@ -24,6 +24,14 @@ class GracefulKiller:
 
     def exit_gracefully(self, signum, frame):
         self.kill_now = True
+
+@blueprint.cli.command("place-speed")
+@click.option('--exchange', required=True, type=str)
+@click.option('--symbol', required=True, type=str)
+@click.option('--qty', required=True, type=int)
+@click.option('--maxloss', required=True, type=float)
+def speed_order(exchange: str, symbol: str, qty: int, maxloss: float):
+    print(f"how fast i am")
 
 
 @blueprint.cli.command("place")

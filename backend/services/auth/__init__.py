@@ -1,2 +1,2 @@
-from .auth import AuthService, AuthRepository
+from .auth import AuthService, AuthRepository, AuthServiceBase
 from .repo import Repository

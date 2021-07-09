@@ -24,6 +24,17 @@ class InstrumentRepository(Protocol):
         pass
 
 
+class InstrumentDummyRepository(InstrumentRepository):
+    def insert_instruments(self):
+        pass
+
+    def get_symbol(self, token: int) -> str:
+        pass
+
+    def get_token(self, symbol: str) -> str:
+        pass
+
+
 class InstrumentService:
     @inject
     def __init__(self, external_instrument_service: ExternalInstrumentService, repository: InstrumentRepository):

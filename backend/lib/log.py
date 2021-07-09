@@ -69,3 +69,4 @@ def initialize_root_logger():
         handler.setFormatter(CustomFormatter())
 
     logger.addHandler(handler)
+
